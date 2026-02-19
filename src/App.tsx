@@ -1,3 +1,5 @@
-const App = (): void => {}
+const App = () => {
+    <></>;
+};
 
-export default App
+export default App;
