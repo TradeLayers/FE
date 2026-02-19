@@ -6,7 +6,7 @@ import prettierConfig from 'eslint-config-prettier';
 
 export default [
     {
-        ignores: ['dist/**', 'node_modules/**', '*.js'],
+        ignores: ['dist/**', 'node_modules/**', '.husky/**', '*.js'],
     },
 
     eslint.configs.recommended,

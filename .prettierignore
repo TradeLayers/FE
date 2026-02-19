@@ -1,0 +1,25 @@
+# Build artifacts
+dist/
+build/
+out/
+
+# Dependencies
+node_modules/
+
+# Lockfiles
+package-lock.json
+package.json
+
+# Environmental variables
+.env
+.env.*
+
+# Static assets
+public/
+*.svg
+*.png
+*.jpg
+
+# Editor folders
+.vscode/
+.idea/
