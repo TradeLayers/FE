@@ -15,14 +15,14 @@ const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
-      <Provider store={store}>
-        <ThemeProvider theme={MainTheme}>
-          <CssBaseline/>
-        <App />
-        </ThemeProvider>
-        </Provider>
-        <ReactQueryDevtools initialIsOpen={false} />
+        <QueryClientProvider client={queryClient}>
+            <Provider store={store}>
+                <ThemeProvider theme={MainTheme}>
+                    <CssBaseline />
+                    <App />
+                </ThemeProvider>
+            </Provider>
+            <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     </StrictMode>,
 );

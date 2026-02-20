@@ -1,73 +1,130 @@
-# React + TypeScript + Vite
+# 🚀 Frontend Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend application for the **TradeLayers** project.
 
-Currently, two official plugins are available:
+It is built using:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React
+- TypeScript
+- Vite
+- MUI (Material UI) for styling
+- TanStack Query for data fetching
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# 🛠 Prerequisites
 
-## Expanding the ESLint configuration
+Before running this project, make sure you have:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Node.js** – Version 24.x or higher
+- **npm** – Version 10.x or higher
 
-```js
-export default defineConfig([
-    globalIgnores(['dist']),
-    {
-        files: ['**/*.{ts,tsx}'],
-        extends: [
-            // Other configs...
+You can check your versions:
 
-            // Remove tseslint.configs.recommended and replace with this
-            tseslint.configs.recommendedTypeChecked,
-            // Alternatively, use this for stricter rules
-            tseslint.configs.strictTypeChecked,
-            // Optionally, add this for stylistic rules
-            tseslint.configs.stylisticTypeChecked,
-
-            // Other configs...
-        ],
-        languageOptions: {
-            parserOptions: {
-                project: ['./tsconfig.node.json', './tsconfig.app.json'],
-                tsconfigRootDir: import.meta.dirname,
-            },
-            // other options...
-        },
-    },
-]);
+```bash
+node -v
+npm -v
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
+# 🏁 Getting Started
 
-export default defineConfig([
-    globalIgnores(['dist']),
-    {
-        files: ['**/*.{ts,tsx}'],
-        extends: [
-            // Other configs...
-            // Enable lint rules for React
-            reactX.configs['recommended-typescript'],
-            // Enable lint rules for React DOM
-            reactDom.configs.recommended,
-        ],
-        languageOptions: {
-            parserOptions: {
-                project: ['./tsconfig.node.json', './tsconfig.app.json'],
-                tsconfigRootDir: import.meta.dirname,
-            },
-            // other options...
-        },
-    },
-]);
+Follow these steps to set up your local development environment.
+
+---
+
+## 1️⃣ Clone the Repository
+
+```bash
+git clone <your-repo-url>
+cd <your-repo-folder>
 ```
+
+---
+
+## 2️⃣ Install Dependencies
+
+This will install all required packages including:
+
+- MUI
+- Axios
+- Redux
+- TanStack Query
+- Husky
+- ESLint
+- Prettier
+
+```bash
+npm install
+```
+
+---
+
+## 3️⃣ Environment Variables
+
+Create a `.env` file in the root directory and add:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+Adjust the URL if your backend runs on a different port or host.
+
+---
+
+## 4️⃣ Run the Development Server
+
+```bash
+npm run dev
+```
+
+After starting, open:
+
+http://localhost:5173
+
+---
+
+# 🏗 Available Scripts
+
+| Script            | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `npm run dev`     | Starts the Vite dev server with Hot Module Replacement (HMR). |
+| `npm run build`   | Compiles TypeScript and bundles the app for production.       |
+| `npm run lint`    | Runs ESLint and checks formatting.                            |
+| `npm run preview` | Previews the production build locally.                        |
+| `npm run format`  | Formats the entire project using Prettier.                    |
+
+---
+
+# 🛡 Code Quality (Git Hooks)
+
+This project uses **Husky** for Git hooks.
+
+### Pre-commit Hook
+
+Every time you run:
+
+```bash
+git commit
+```
+
+The project will automatically:
+
+- Runs `npm run lint`
+- Runs `npm run format`
+- Block the commit if there are errors
+
+You must fix all linting or formatting issues before committing.
+
+---
+
+# 📦 Production Build
+
+To build for production:
+
+```bash
+npm run build
+```
+
+The output will be generated inside the `dist/` folder.
