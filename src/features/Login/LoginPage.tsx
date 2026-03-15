@@ -1,11 +1,7 @@
-import { SignUp } from './SignUp'
+import { SignUp } from './SignUp';
 
 const LoginPage: React.FC = () => {
-    return (
-        <div>
-            <SignUp />
-        </div>
-    );
-}
+    return <SignUp />;
+};
 
 export default LoginPage;
