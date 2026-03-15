@@ -1,11 +1,18 @@
+import { getToken } from "@configs/firebaseUtils";
 import axios from "axios";
 
-export const api = axios.create({
+export const protectedApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-api.interceptors.request.use((config) => {
+console.log(import.meta.env.VITE_API_URL);
+
+protectedApi.interceptors.request.use(async (config) => {
+    const firebaseJwtToken = await getToken();
+
+    if(firebaseJwtToken) {
+      config.headers.Authorization = firebaseJwtToken;
+    }
+
     return config;
 });
-
-export default api;
