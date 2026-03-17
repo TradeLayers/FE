@@ -2,12 +2,11 @@ import {
     signInWithPopup,
     GoogleAuthProvider,
     GithubAuthProvider,
-    type User as FirebaseUser,
 } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { auth } from '@configs/firebase';
-import { type User, UserType } from '@models/userTypes';
+import { type User } from '@models/userTypes';
 import { addUserInfo } from '@store/userSlice';
 import { protectedApi } from '@api/axiosConfig';
 
@@ -17,35 +16,24 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 
 import { Title, Description, AdditionalInfo, AuthOptions } from './SignUp.styles';
 
-const buildUserFromFirebase = async (firebaseUser: FirebaseUser): Promise<User> => {
-    const firebaseId = await firebaseUser.getIdToken();
-
-    return {
-        userType: UserType.User,
-        name: firebaseUser.displayName || firebaseUser.email || 'User',
-        firebaseId: firebaseId,
-        email: firebaseUser.email || undefined,
-    };
-};
-
 export const SignUp: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const handleSuccess = async (firebaseUser: FirebaseUser) => {
-        const user = await buildUserFromFirebase(firebaseUser);
-        dispatch(addUserInfo(user));
-        protectedApi.get('/user');
-        navigate('/');
-    };
-
     const signInWithProvider = async (provider: GoogleAuthProvider | GithubAuthProvider) => {                                                                         
-      try {                                                                                                                                                           
-        const result = await signInWithPopup(auth, provider);
-        handleSuccess(result.user);                                                                                                                                   
+      try {
+        await signInWithPopup(auth, provider);
+        
+        const response = await protectedApi.get<User>('/user');
+        dispatch(addUserInfo(response.data));
+        navigate('/');
       } catch (err: any) {                        
-        if (import.meta.env.DEV) 
+        if (import.meta.env.DEV){ 
           console.error(err);
+          if (err.code === 'auth/account-exists-with-different-credential') {
+                alert("Šis el. paštas jau naudojamas su kitu prisijungimo būdu");
+          }
+        }
       }                                                                                                                                                               
     };
 

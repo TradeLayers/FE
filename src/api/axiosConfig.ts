@@ -11,7 +11,7 @@ protectedApi.interceptors.request.use(async (config) => {
     const firebaseJwtToken = await getToken();
 
     if (firebaseJwtToken) {
-        config.headers.Authorization = firebaseJwtToken;
+        config.headers.Authorization = `Bearer ${firebaseJwtToken}`;
     }
 
     return config;
