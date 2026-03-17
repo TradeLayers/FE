@@ -6,6 +6,6 @@ export enum UserType {
 export type User = {
     userType: UserType;
     name: string;
-    picture?: string;
+    firebaseId?: string;
     email?: string;
 };
