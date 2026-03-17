@@ -1,7 +1,7 @@
-export enum UserType { 
+export enum UserType {
     Guest = 'Guest',
-    User = 'Admin' 
-};
+    User = 'Admin',
+}
 
 export type User = {
     userType: UserType;

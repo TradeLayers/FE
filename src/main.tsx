@@ -14,14 +14,14 @@ import MainTheme from './styles/theme.ts';
 const queryClient = new QueryClient();
 
 const MainPage = lazy(() => import('./MainPage.tsx'));
-const LoginPage = lazy(() => import('./features/Login/LoginPage.tsx'))
+const LoginPage = lazy(() => import('./features/Login/LoginPage.tsx'));
 
 function Main() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path='*' element = {<MainPage/>}/>
-                <Route path='login' element={<LoginPage/>}/>
+                <Route path="*" element={<MainPage />} />
+                <Route path="login" element={<LoginPage />} />
             </Routes>
         </BrowserRouter>
     );

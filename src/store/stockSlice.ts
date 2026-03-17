@@ -10,7 +10,7 @@ const stockSlice = createSlice({
     reducers: {
         addStock: (state: Stocks, action: PayloadAction<[string, StockInfo]>) => {
             const [stockName, stockInfo] = action.payload;
-            state[stockName] = stockInfo
+            state[stockName] = stockInfo;
         },
     },
 });

@@ -1,7 +1,6 @@
 import { type SxProps, type Theme } from '@mui/material';
 
-export const Title: SxProps<Theme> = 
-{
+export const Title: SxProps<Theme> = {
     minHeight: '100vh',
     display: 'flex',
     alignItems: 'center',
@@ -10,8 +9,7 @@ export const Title: SxProps<Theme> =
     px: 2,
 };
 
-export const Description: SxProps<Theme> =
-{
+export const Description: SxProps<Theme> = {
     width: '100%',
     maxWidth: 600,
     color: 'primary.secondary',
@@ -20,18 +18,16 @@ export const Description: SxProps<Theme> =
     p: 4,
     fontSize: 20,
     boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-}
+};
 
-export const BoxStyleThird: SxProps<Theme> =
-{ 
-    mt: 1, 
+export const AdditionalInfo: SxProps<Theme> = {
+    mt: 1,
     mb: 3,
     color: 'primary.secondary',
-}
+};
 
-export const BoxStyleFourht: SxProps<Theme> =
-{ 
-    display: 'flex', 
+export const AuthOptions: SxProps<Theme> = {
+    display: 'flex',
     gap: 2,
-    color: 'ffffff'
-}
+    color: 'ffffff',
+};
