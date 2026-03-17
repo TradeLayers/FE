@@ -4,7 +4,7 @@ const MainPage: React.FC = () => {
     return (
         <div>
             <div>Main Page</div>
-            <Outlet/>
+            <Outlet />
         </div>
     );
 };

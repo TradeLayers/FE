@@ -4,4 +4,4 @@ export type StockInfo = {
 
 export type Stocks = {
     [stockName: string]: StockInfo;
-}
+};

@@ -1,11 +1,11 @@
-export enum UserType { 
+export enum UserType {
     Guest = 'Guest',
-    User = 'Admin' 
-};
+    User = 'Admin',
+}
 
 export type User = {
     userType: UserType;
     name: string;
-    picture?: string;
+    firebaseId?: string;
     email?: string;
 };

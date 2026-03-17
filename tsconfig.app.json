@@ -34,5 +34,5 @@
             "@models/*": ["src/models/*"]
         }
     },
-    "include": ["src"],
+    "include": ["src"]
 }
