@@ -15,8 +15,11 @@ const userSlice = createSlice({
             Object.assign(state, action.payload);
             console.error(state);
         },
+        resetUserInfo: (state: User) => {
+            Object.assign(state, initialState);
+        },
     },
 });
 
-export const { addUserInfo } = userSlice.actions;
+export const { addUserInfo, resetUserInfo } = userSlice.actions;
 export default userSlice.reducer;
