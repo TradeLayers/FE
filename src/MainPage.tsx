@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -7,6 +7,8 @@ import { auth } from '@configs/firebase';
 import { UserType } from '@models/userTypes';
 import { type RootState } from '@store/store';
 import { resetUserInfo } from '@store/userSlice';
+import LogInButton from './components/LogInButton';
+import { HeaderRow, PageWrapper } from './MainPage.styles';
 
 const MainPage: React.FC = () => {
     const navigate = useNavigate();
@@ -26,31 +28,12 @@ const MainPage: React.FC = () => {
     };
 
     return (
-        <Box sx={{ p: 3 }}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 3,
-                }}
-            >
+        <Box sx={PageWrapper}>
+            <Box sx={HeaderRow}>
                 <Typography variant="h4" component="h1">
                     Stock Tracker
                 </Typography>
-                <Button
-                    variant="outlined"
-                    size="large"
-                    sx={{
-                        px: 4,
-                        py: 1.5,
-                        fontSize: '1.1rem',
-                        backgroundColor: '#16171dff',
-                    }}
-                    onClick={handleAuthButtonClick}
-                >
-                    {isLoggedIn ? 'Log Out' : 'Log In'}
-                </Button>
+                <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
             </Box>
             <Outlet />
         </Box>
