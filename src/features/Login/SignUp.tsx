@@ -1,8 +1,4 @@
-import {
-    signInWithPopup,
-    GoogleAuthProvider,
-    GithubAuthProvider,
-} from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { auth } from '@configs/firebase';
@@ -20,31 +16,30 @@ export const SignUp: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const signInWithProvider = async (provider: GoogleAuthProvider | GithubAuthProvider) => {                                                                         
-      try {
-        await signInWithPopup(auth, provider);
-        
-        const response = await protectedApi.get<User>('/user');
-        dispatch(addUserInfo(response.data));
-        navigate('/');
-      } catch (err: any) {                        
-        if (import.meta.env.DEV){ 
-          console.error(err);
-          if (err.code === 'auth/account-exists-with-different-credential') {
-                alert("Šis el. paštas jau naudojamas su kitu prisijungimo būdu");
-          }
+    const signInWithProvider = async (provider: GoogleAuthProvider | GithubAuthProvider) => {
+        try {
+            await signInWithPopup(auth, provider);
+
+            const response = await protectedApi.get<User>('/user');
+            dispatch(addUserInfo(response.data));
+            navigate('/');
+        } catch (err: any) {
+            if (import.meta.env.DEV) {
+                console.error(err);
+            }
         }
-      }                                                                                                                                                               
     };
 
-    const handleGoogleAuth = async () => {                                                                                                                                                  
-      const provider = new GoogleAuthProvider();  
-      provider.setCustomParameters({ prompt: 'select_account' });
-      signInWithProvider(provider);                                                                                                                                   
-    }                                                                                                                                                                
-                                                                                                                                                                      
+    const handleGoogleAuth = async () => {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        signInWithProvider(provider);
+    };
+
     const handleGitHubAuth = async () => {
-      signInWithProvider(new GithubAuthProvider())
+        const provider = new GithubAuthProvider();
+        provider.addScope('user:email')
+        signInWithProvider(provider)
     };
 
     return (

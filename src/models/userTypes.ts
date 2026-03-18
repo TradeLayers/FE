@@ -7,4 +7,6 @@ export type User = {
     lastOnline?: Date;
 };
 
-export const isGuest = (user: User): boolean => {return user.name == "Guest"} 
+export const isGuest = (user: User): boolean => {
+    return user.name == 'Guest';
+};
