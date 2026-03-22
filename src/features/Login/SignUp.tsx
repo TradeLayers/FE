@@ -2,9 +2,8 @@ import { signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from 'firebas
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { auth } from '@configs/firebase';
-import { type User } from '@models/userTypes';
 import { addUserInfo } from '@store/userSlice';
-import { protectedApi } from '@api/axiosConfig';
+import { createOrFetchUser } from '@api/userApi';
 
 import { Box, Typography, Button, Divider } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -20,8 +19,8 @@ export const SignUp: React.FC = () => {
         try {
             await signInWithPopup(auth, provider);
 
-            const response = await protectedApi.get<User>('/user');
-            dispatch(addUserInfo(response.data));
+            const usersData = await createOrFetchUser();
+            dispatch(addUserInfo(usersData));
             navigate('/');
         } catch (err: any) {
             if (import.meta.env.DEV) {
@@ -38,8 +37,8 @@ export const SignUp: React.FC = () => {
 
     const handleGitHubAuth = async () => {
         const provider = new GithubAuthProvider();
-        provider.addScope('user:email')
-        signInWithProvider(provider)
+        provider.addScope('user:email');
+        signInWithProvider(provider);
     };
 
     return (
