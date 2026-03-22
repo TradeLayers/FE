@@ -22,7 +22,7 @@ export const SignUp: React.FC = () => {
             const usersData = await createOrFetchUser();
             dispatch(addUserInfo(usersData));
             navigate('/');
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (import.meta.env.DEV) {
                 console.error(err);
             }

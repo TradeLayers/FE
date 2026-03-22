@@ -8,5 +8,5 @@ export type User = {
 };
 
 export const isGuest = (user: User): boolean => {
-    return user.name == 'Guest';
+    return user.name === 'Guest';
 };
