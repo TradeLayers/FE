@@ -12,6 +12,6 @@ export const isGuest = (user: User): boolean => {
 };
 
 export type UserFields = {
-    name?: string
-    email?: string
-}
+    name?: string;
+    email?: string;
+};

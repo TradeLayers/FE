@@ -7,10 +7,10 @@ export const createOrFetchUser = async (): Promise<User> => {
 };
 
 export const updateUserFields = async (fieldsObj: UserFields): Promise<User> => {
-    const response= await protectedApi.patch('/user', fieldsObj)
-    return response.data
-}
+    const response = await protectedApi.patch<User>('/user', fieldsObj);
+    return response.data;
+};
 
-export const deleteUser = async () => {
-    await protectedApi.delete('/user')
-}
+export const deleteUser = async (): Promise<void> => {
+    await protectedApi.delete('/user');
+};
