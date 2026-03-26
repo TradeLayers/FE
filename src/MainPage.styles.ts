@@ -14,6 +14,5 @@ export const HeaderRow: SxProps<Theme> = {
 export const AuthButton: SxProps<Theme> = {
     px: 4,
     py: 1.5,
-    fontSize: '1.1rem',
-    backgroundColor: '#16171dff',
+    backgroundColor: 'background.paper',
 };
