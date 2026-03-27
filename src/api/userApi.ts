@@ -1,16 +1,16 @@
-import { authrorizedApi,} from './axiosConfig';
+import { authorizedApi } from './axiosConfig';
 import { type User, type UserFields } from '@models/userTypes';
 
 export const createOrFetchUser = async (): Promise<User> => {
-    const response = await authrorizedApi.post<User>('/user');
+    const response = await authorizedApi.post<User>('/user');
     return response.data;
 };
 
 export const updateUserFields = async (fieldsObj: UserFields): Promise<User> => {
-    const response = await authrorizedApi.patch<User>('/user', fieldsObj);
+    const response = await authorizedApi.patch<User>('/user', fieldsObj);
     return response.data;
 };
 
 export const deleteUser = async (): Promise<void> => {
-    await authrorizedApi.delete('/user');
+    await authorizedApi.delete('/user');
 };

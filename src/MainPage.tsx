@@ -29,7 +29,7 @@ const MainPage: React.FC = () => {
 
     return (
         <Box sx={PageWrapper}>
-            <InformationDisplay/>
+            <InformationDisplay />
             <Box sx={HeaderRow}>
                 <Typography variant="h4" component="h1">
                     Stock Tracker

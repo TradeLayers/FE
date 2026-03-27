@@ -1,14 +1,14 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { InfoMessageStatus, type Information} from '@models/informationType';
+import { InfoMessageStatus, type Information } from '@models/informationType';
 
-const informationSpliceName = 'infoSlice';
+const informationSliceName = 'infoSlice';
 const initialState: Information = {
     infoMessage: '',
-    status: InfoMessageStatus.None
+    status: InfoMessageStatus.None,
 };
 
 const infoSlice = createSlice({
-    name: informationSpliceName,
+    name: informationSliceName,
     initialState,
     reducers: {
         addInfo: (_, action: PayloadAction<Information>) => {

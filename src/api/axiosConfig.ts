@@ -10,13 +10,16 @@ export const unauthorizedApi = axios.create({
     baseURL: BaseUrl,
 });
 
-export const authrorizedApi = axios.create({
+export const  authorizedApi = axios.create({
     baseURL: BaseUrl,
 });
 
-authrorizedApi.interceptors.request.use(async (request) => {
+authorizedApi.interceptors.request.use(async (request) => {
     const firebaseJwtToken = await getToken();
-    request.headers.Authorization = `Bearer ${firebaseJwtToken}`;
+    if (firebaseJwtToken) {
+        request.headers.Authorization = `Bearer ${firebaseJwtToken}`;
+    }
+
     return request;
 });
 
@@ -27,20 +30,21 @@ function getErrorMessage(data: unknown): Information {
         'error' in data &&
         typeof (data as { error?: unknown }).error === 'string'
     ) {
-        return {infoMessage: (String)(data.error), status: InfoMessageStatus.Error}
+        return { infoMessage: String(data.error), status: InfoMessageStatus.Error };
     }
 
-    return {infoMessage: '', status: InfoMessageStatus.None}
+    return { infoMessage: '', status: InfoMessageStatus.None };
 }
 
-authrorizedApi.interceptors.response.use(async (response) => {
+authorizedApi.interceptors.response.use(
+    async (response) => {
         return response;
     },
     async (error) => {
         const message = getErrorMessage(error.response?.data);
 
-        store.dispatch(addInfo(message))
+        store.dispatch(addInfo(message));
 
-        Promise.reject(error)
-    }
+        return Promise.reject(error);
+    },
 );
