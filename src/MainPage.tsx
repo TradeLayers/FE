@@ -7,6 +7,7 @@ import { auth } from '@configs/firebase';
 import { type RootState } from '@store/store';
 import { resetUserInfo } from '@store/userSlice';
 import LogInButton from './components/LogInButton';
+import { InformationDisplay } from './features/informationDisplay/infoSnackBar';
 import { HeaderRow, PageWrapper } from './MainPage.styles';
 import { isGuest } from '@models/userTypes';
 
@@ -28,6 +29,7 @@ const MainPage: React.FC = () => {
 
     return (
         <Box sx={PageWrapper}>
+            <InformationDisplay/>
             <Box sx={HeaderRow}>
                 <Typography variant="h4" component="h1">
                     Stock Tracker
