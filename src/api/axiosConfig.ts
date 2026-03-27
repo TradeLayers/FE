@@ -10,7 +10,7 @@ export const unauthorizedApi = axios.create({
     baseURL: BaseUrl,
 });
 
-export const  authorizedApi = axios.create({
+export const authorizedApi = axios.create({
     baseURL: BaseUrl,
 });
 

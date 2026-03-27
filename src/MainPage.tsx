@@ -10,6 +10,8 @@ import LogInButton from './components/LogInButton';
 import { InformationDisplay } from './features/informationDisplay/infoSnackBar';
 import { HeaderRow, PageWrapper } from './MainPage.styles';
 import { isGuest } from '@models/userTypes';
+import { InfoMessageStatus, type Information } from '@models/informationType';
+import { addInfo } from '@store/informationSplice';
 
 const MainPage: React.FC = () => {
     const navigate = useNavigate();
@@ -24,6 +26,14 @@ const MainPage: React.FC = () => {
 
         await signOut(auth);
         dispatch(resetUserInfo());
+
+        const infoMess: Information = {
+            infoMessage: 'Logged out',
+            status: InfoMessageStatus.Success
+        }
+
+        dispatch(addInfo(infoMess))
+
         navigate('/');
     };
 
