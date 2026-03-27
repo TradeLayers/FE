@@ -1,16 +1,22 @@
 import { getToken } from '@configs/firebaseUtils';
 import axios from 'axios';
 
-export const protectedApi = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+const BaseUrl = import.meta.env.VITE_API_URL
+
+export const unauthorizedApi = axios.create({
+    baseURL: BaseUrl
+})
+
+export const authrorizedApi = axios.create({
+    baseURL: BaseUrl
 });
 
-protectedApi.interceptors.request.use(async (config) => {
+authrorizedApi.interceptors.request.use(async (config) => {
     const firebaseJwtToken = await getToken();
-
-    if (firebaseJwtToken) {
-        config.headers.Authorization = `Bearer ${firebaseJwtToken}`;
-    }
-
+    config.headers.Authorization = `Bearer ${firebaseJwtToken}`;
     return config;
 });
+
+authrorizedApi.interceptors.response.use(async (config) => {
+    return config
+})
