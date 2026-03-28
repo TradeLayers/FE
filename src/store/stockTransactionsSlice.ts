@@ -1,10 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { type UserStockTrasactions } from '@models/stockTransactions.Types';
+import { type UserStockTransactions } from '@models/stockTransactions.Types';
 import { type StockTransaction } from '@models/stockTransactions.Types';
 
-const stockTrasactionsSliceName = 'stockSlice';
-const initialState: UserStockTrasactions = {
-    stocksTrasactions: [],
+const stockTrasactionsSliceName = 'stockTransactionsSlice';
+const initialState: UserStockTransactions= {
+    stockTransactions: [],
 };
 
 const stockTrasactionsSlice = createSlice({
@@ -12,10 +12,10 @@ const stockTrasactionsSlice = createSlice({
     initialState,
     reducers: {
         addStockTrasaction: (
-            state: UserStockTrasactions,
+            state: UserStockTransactions,
             action: PayloadAction<StockTransaction>,
         ) => {
-            state.stocksTrasactions.push(action.payload);
+            state.stockTransactions.push(action.payload);
         },
     },
 });
