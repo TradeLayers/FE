@@ -24,10 +24,10 @@ export const SignUp: React.FC = () => {
             const usersData = await createOrFetchUser();
             dispatch(addUserInfo(usersData));
 
-            const infoMess: Information ={
+            const infoMess: Information = {
                 infoMessage: 'Successfully logged in',
-                status: InfoMessageStatus.Success
-            }
+                status: InfoMessageStatus.Success,
+            };
 
             dispatch(addInfo(infoMess));
             navigate('/');
