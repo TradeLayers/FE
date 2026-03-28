@@ -1,10 +1,10 @@
-import { type Stock } from "./stockTypes"
+import { type Stock } from './stockTypes';
 
 export type UserHoldings = {
-    stock: Stock,
-    quantity: number,
-}
+    stock: Stock;
+    quantity: number;
+};
 
 export type AllUserHoldings = {
-    userHoldings: UserHoldings[],
-}
+    userHoldings: UserHoldings[];
+};

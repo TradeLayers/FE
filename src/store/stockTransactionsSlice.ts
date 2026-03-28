@@ -4,14 +4,17 @@ import { type StockTransaction } from '@models/stockTransactions.Types';
 
 const stockTrasactionsSliceName = 'stockSlice';
 const initialState: UserStockTrasactions = {
-    stocksTrasactions: []
+    stocksTrasactions: [],
 };
 
 const stockTrasactionsSlice = createSlice({
     name: stockTrasactionsSliceName,
     initialState,
     reducers: {
-        addStockTrasaction: (state: UserStockTrasactions, action: PayloadAction<StockTransaction>) => {
+        addStockTrasaction: (
+            state: UserStockTrasactions,
+            action: PayloadAction<StockTransaction>,
+        ) => {
             state.stocksTrasactions.push(action.payload);
         },
     },

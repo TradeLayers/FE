@@ -1,18 +1,18 @@
-import { type Stock } from "./stockTypes"
+import { type Stock } from './stockTypes';
 
 enum TransactionTypes {
     bought,
-    sell
-};
+    sell,
+}
 
 export type StockTransaction = {
-    stock: Stock,
-    price: number,
-    quantity: number,
-    transactionDate: Date,
-    transactionType: TransactionTypes
-}
+    stock: Stock;
+    price: number;
+    quantity: number;
+    transactionDate: Date;
+    transactionType: TransactionTypes;
+};
 
 export type UserStockTrasactions = {
-    stocksTrasactions: StockTransaction[],
-}
+    stocksTrasactions: StockTransaction[];
+};

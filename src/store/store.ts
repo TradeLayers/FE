@@ -7,7 +7,7 @@ const store = configureStore({
     reducer: {
         userSliceName: userSlice,
         userHoldingsSliceName: userHoldings,
-        stockTrasactionsSliceName: stockTransactions
+        stockTrasactionsSliceName: stockTransactions,
     },
 });
 

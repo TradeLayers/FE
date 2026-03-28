@@ -3,7 +3,7 @@ import { type AllUserHoldings, type UserHoldings } from '@models/userHoldingsTyp
 
 const userHoldingsSliceName = 'userHoldingsSlice';
 const initialState: AllUserHoldings = {
-    userHoldings: []
+    userHoldings: [],
 };
 
 const userHoldingsSlice = createSlice({
