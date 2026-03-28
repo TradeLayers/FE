@@ -1,7 +1,7 @@
 export enum InfoMessageStatus {
-    Error,
-    Success,
-    None,
+    Error = 'Error',
+    Success = 'Success',
+    None = 'None',
 }
 
 export type Information = {

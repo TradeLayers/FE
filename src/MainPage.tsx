@@ -29,10 +29,10 @@ const MainPage: React.FC = () => {
 
         const infoMess: Information = {
             infoMessage: 'Logged out',
-            status: InfoMessageStatus.Success
-        }
+            status: InfoMessageStatus.Success,
+        };
 
-        dispatch(addInfo(infoMess))
+        dispatch(addInfo(infoMess));
 
         navigate('/');
     };

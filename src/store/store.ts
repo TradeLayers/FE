@@ -1,12 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userSlice from './userSlice';
-import stockSlice from './stockSlice';
+import userHoldingsSlice from './userHoldings';
+import stockTransactionsSlice from './stockTransactionsSlice';
 import informationSlice from './informationSplice';
 
 const store = configureStore({
     reducer: {
         userSliceName: userSlice,
-        stockSliceName: stockSlice,
+        userHoldingsSliceName: userHoldingsSlice,
+        stockTrasactionsSliceName: stockTransactionsSlice,
         informationSliceName: informationSlice,
     },
 });
