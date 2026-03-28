@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -37,9 +37,25 @@ const MainPage: React.FC = () => {
     return (
         <Box sx={PageWrapper}>
             <Box sx={HeaderRow}>
-                <Typography variant="h4" component="h1">
+                <Button
+                    variant="text"
+                    size="large"
+                    onClick={() => handleNavigate('/')}
+                    sx={{
+                        p: 0,
+                        minWidth: 'auto',
+                        textTransform: 'none',
+                        color: 'text.primary',
+                        fontSize: '2.125rem',
+                        fontWeight: 400,
+                        lineHeight: 1.235,
+                        '&:hover': {
+                            backgroundColor: 'transparent',
+                        },
+                    }}
+                >
                     Stock Tracker
-                </Typography>
+                </Button>
                 <Box sx={HeaderActions}>
                     <Button
                         variant={isActivePath('/about') ? 'contained' : 'outlined'}
