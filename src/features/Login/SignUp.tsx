@@ -2,6 +2,8 @@ import { signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from 'firebas
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { auth } from '@configs/firebase';
+import { InfoMessageStatus, type Information } from '@models/informationType';
+import { addInfo } from '@store/informationSplice';
 import { addUserInfo } from '@store/userSlice';
 import { createOrFetchUser } from '@api/userApi';
 
@@ -21,6 +23,13 @@ export const SignUp: React.FC = () => {
 
             const usersData = await createOrFetchUser();
             dispatch(addUserInfo(usersData));
+
+            const infoMess: Information ={
+                infoMessage: 'Successfully logged in',
+                status: InfoMessageStatus.Success
+            }
+
+            dispatch(addInfo(infoMess));
             navigate('/');
         } catch (err: unknown) {
             if (import.meta.env.DEV) {
