@@ -15,12 +15,20 @@ const queryClient = new QueryClient();
 
 const MainPage = lazy(() => import('./MainPage.tsx'));
 const LoginPage = lazy(() => import('./features/Login/LoginPage.tsx'));
+const HomePage = lazy(() => import('./features/Home/HomePage.tsx'));
+const AboutPage = lazy(() => import('./features/About/AboutPage.tsx'));
+const LearnPage = lazy(() => import('./features/Learn/LearnPage.tsx'));
 
-function Main() {
+function Main(): React.JSX.Element {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="*" element={<MainPage />} />
+                <Route path="/" element={<MainPage />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="about" element={<AboutPage />} />
+                    <Route path="learn" element={<LearnPage />} />
+                    <Route path="*" element={<HomePage />} />
+                </Route>
                 <Route path="login" element={<LoginPage />} />
             </Routes>
         </BrowserRouter>
