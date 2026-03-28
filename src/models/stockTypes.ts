@@ -1,7 +1,4 @@
-export type StockInfo = {
-    price: number;
-};
-
-export type Stocks = {
-    [stockName: string]: StockInfo;
+export type Stock = {
+    stockName:string,
+    symbol: string
 };
