@@ -1,10 +1,6 @@
 import { Avatar, Box, Paper, Stack, Typography } from '@mui/material';
 
-const contributors = [
-    'Matas Brazauskas',
-    'Steponas Kaminskas',
-    'Titas Aleškevičius',
-];
+const contributors = ['Matas Brazauskas', 'Steponas Kaminskas', 'Titas Aleškevičius'];
 
 const getInitials = (name: string): string =>
     name
