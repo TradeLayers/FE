@@ -1,15 +1,11 @@
-import {
-    signInWithPopup,
-    GoogleAuthProvider,
-    GithubAuthProvider,
-    type User as FirebaseUser,
-} from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { auth } from '@configs/firebase';
-import { type User, UserType } from '@models/userTypes';
+import { InfoMessageStatus, type Information } from '@models/informationType';
+import { addInfo } from '@store/informationSplice';
 import { addUserInfo } from '@store/userSlice';
-import { protectedApi } from '@api/axiosConfig';
+import { createOrFetchUser } from '@api/userApi';
 
 import { Box, Typography, Button, Divider } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -17,46 +13,41 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 
 import { Title, Description, AdditionalInfo, AuthOptions } from './SignUp.styles';
 
-const buildUserFromFirebase = async (firebaseUser: FirebaseUser): Promise<User> => {
-    const firebaseId = await firebaseUser.getIdToken();
-
-    return {
-        userType: UserType.User,
-        name: firebaseUser.displayName || firebaseUser.email || 'User',
-        firebaseId: firebaseId,
-        email: firebaseUser.email || undefined,
-    };
-};
-
 export const SignUp: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const handleSuccess = async (firebaseUser: FirebaseUser) => {
-        const user = await buildUserFromFirebase(firebaseUser);
-        dispatch(addUserInfo(user));
-        protectedApi.get('/user');
-        navigate('/');
+    const signInWithProvider = async (provider: GoogleAuthProvider | GithubAuthProvider) => {
+        try {
+            await signInWithPopup(auth, provider);
+
+            const usersData = await createOrFetchUser();
+            dispatch(addUserInfo(usersData));
+
+            const infoMess: Information = {
+                infoMessage: 'Successfully logged in',
+                status: InfoMessageStatus.Success,
+            };
+
+            dispatch(addInfo(infoMess));
+            navigate('/');
+        } catch (err: unknown) {
+            if (import.meta.env.DEV) {
+                console.error(err);
+            }
+        }
     };
 
-    const signInWithProvider = async (provider: GoogleAuthProvider | GithubAuthProvider) => {                                                                         
-      try {                                                                                                                                                           
-        const result = await signInWithPopup(auth, provider);
-        handleSuccess(result.user);                                                                                                                                   
-      } catch (err: any) {                        
-        if (import.meta.env.DEV) 
-          console.error(err);
-      }                                                                                                                                                               
+    const handleGoogleAuth = async () => {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        signInWithProvider(provider);
     };
 
-    const handleGoogleAuth = async () => {                                                                                                                                                  
-      const provider = new GoogleAuthProvider();  
-      provider.setCustomParameters({ prompt: 'select_account' });
-      signInWithProvider(provider);                                                                                                                                   
-    }                                                                                                                                                                
-                                                                                                                                                                      
     const handleGitHubAuth = async () => {
-      signInWithProvider(new GithubAuthProvider())
+        const provider = new GithubAuthProvider();
+        provider.addScope('user:email');
+        signInWithProvider(provider);
     };
 
     return (

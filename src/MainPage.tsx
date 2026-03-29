@@ -4,7 +4,6 @@ import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { auth } from '@configs/firebase';
-import { UserType } from '@models/userTypes';
 import { type RootState } from '@store/store';
 import { resetUserInfo } from '@store/userSlice';
 import LogInButton from './components/LogInButton';
@@ -14,8 +13,7 @@ const MainPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
-    const userType = useSelector((state: RootState) => state.userSliceName.userType);
-    const isLoggedIn = userType !== UserType.Guest;
+    const isLoggedIn = useSelector((state: RootState) => !isGuest(state.userSliceName));
 
     const handleAuthButtonClick = async (): Promise<void> => {
         if (!isLoggedIn) {
@@ -25,6 +23,14 @@ const MainPage: React.FC = () => {
 
         await signOut(auth);
         dispatch(resetUserInfo());
+
+        const infoMess: Information = {
+            infoMessage: 'Logged out',
+            status: InfoMessageStatus.Success,
+        };
+
+        dispatch(addInfo(infoMess));
+
         navigate('/');
     };
 
@@ -36,6 +42,7 @@ const MainPage: React.FC = () => {
 
     return (
         <Box sx={PageWrapper}>
+            <InformationDisplay />
             <Box sx={HeaderRow}>
                 <Button
                     variant="text"
