@@ -35,7 +35,7 @@ import { deleteUser, updateUserFields } from '@api/userApi';
 
 type TabValue = 'account' | 'holdings' | 'transactions';
 
-const boughtType = 'BUY' as StockTransaction['transactionType'];
+const boughtType = 'BOUGHT' as StockTransaction['transactionType'];
 const sellType = 'SELL' as StockTransaction['transactionType'];
 
 const mockHoldings: UserHoldings[] = [
