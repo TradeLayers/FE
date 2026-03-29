@@ -1,10 +1,13 @@
-import { StrictMode, lazy } from 'react';
+import { StrictMode, lazy, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { onAuthStateChanged } from 'firebase/auth';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 
-import { Provider } from 'react-redux';
 import store from '@store/store.ts';
+import { addUserInfo } from '@store/userSlice';
+import { auth } from '@configs/firebase';
+import { authorizedApi } from '@api/axiosConfig';
 import { isGuest } from '@models/userTypes';
 import { type RootState } from '@store/store';
 
@@ -22,6 +25,7 @@ const HomePage = lazy(() => import('./features/Home/HomePage.tsx'));
 const AboutPage = lazy(() => import('./features/About/AboutPage.tsx'));
 const LearnPage = lazy(() => import('./features/Learn/LearnPage.tsx'));
 const AccountPage = lazy(() => import('./features/Account/AccountPage.tsx'));
+const StocksPage = lazy(() => import('./features/Stocks/StocksPage.tsx'));
 
 const RequireUser: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isLoggedIn = useSelector((state: RootState) => !isGuest(state.userSliceName));
@@ -33,6 +37,26 @@ const RequireUser: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return <>{children}</>;
 };
 
+function AuthListener(): null {
+    const dispatch = useDispatch();
+    useEffect(() => {
+        return onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser) {
+                const token = await firebaseUser.getIdToken();
+                dispatch(
+                    addUserInfo({
+                        name: firebaseUser.displayName || firebaseUser.email || 'User',
+                        firebaseId: token,
+                        email: firebaseUser.email || undefined,
+                    }),
+                );
+                authorizedApi.post('/user');
+            }
+        });
+    }, [dispatch]);
+    return null;
+}
+
 function Main(): React.JSX.Element {
     return (
         <BrowserRouter>
@@ -41,6 +65,7 @@ function Main(): React.JSX.Element {
                     <Route index element={<HomePage />} />
                     <Route path="about" element={<AboutPage />} />
                     <Route path="learn" element={<LearnPage />} />
+                    <Route path="stocks" element={<StocksPage />} />
                     <Route
                         path="account"
                         element={
@@ -63,6 +88,7 @@ createRoot(document.getElementById('root')!).render(
             <Provider store={store}>
                 <ThemeProvider theme={MainTheme}>
                     <CssBaseline />
+                    <AuthListener />
                     <Main />
                 </ThemeProvider>
             </Provider>

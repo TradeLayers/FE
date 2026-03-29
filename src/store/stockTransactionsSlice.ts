@@ -3,7 +3,7 @@ import { type UserStockTransactions } from '@models/stockTransactions.Types';
 import { type StockTransaction } from '@models/stockTransactions.Types';
 
 const stockTrasactionsSliceName = 'stockTransactionsSlice';
-const initialState: UserStockTransactions= {
+const initialState: UserStockTransactions = {
     stockTransactions: [],
 };
 

@@ -7,8 +7,7 @@ const HomePage: React.FC = () => {
                 Welcome to TradeLayers
             </Typography>
             <Typography variant="body1" color="text.secondary">
-                Track market movements and stay connected to your portfolio
-                in one place.
+                Track market movements and stay connected to your portfolio in one place.
             </Typography>
         </Box>
     );

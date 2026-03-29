@@ -214,9 +214,7 @@ const AccountPage: React.FC = () => {
                             <Typography variant="body2" color="text.secondary">
                                 Holdings Balance
                             </Typography>
-                            <Typography variant="h6">
-                                {user.balance}
-                            </Typography>
+                            <Typography variant="h6">{user.balance}</Typography>
                         </Box>
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                             <Button
