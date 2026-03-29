@@ -9,11 +9,23 @@ export const HeaderRow: SxProps<Theme> = {
     justifyContent: 'space-between',
     alignItems: 'center',
     mb: 3,
+    gap: 2,
+    flexWrap: 'wrap',
+};
+
+export const HeaderActions: SxProps<Theme> = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    flexWrap: 'wrap',
+};
+
+export const NavButton: SxProps<Theme> = {
+    minWidth: 110,
 };
 
 export const AuthButton: SxProps<Theme> = {
     px: 4,
     py: 1.5,
-    fontSize: '1.1rem',
-    backgroundColor: '#16171dff',
+    backgroundColor: 'background.paper',
 };

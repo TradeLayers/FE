@@ -53,17 +53,11 @@ export const SignUp: React.FC = () => {
     return (
         <Box sx={Title}>
             <Box sx={Description}>
-                <Typography
-                    variant="h5"
-                    fontSize={40}
-                    fontWeight={800}
-                    textAlign="center"
-                    color="primary.main"
-                >
+                <Typography variant="h2" textAlign="center" color="primary.main">
                     Stock Tracker
                 </Typography>
 
-                <Typography variant="h5" fontSize={20} textAlign="center" sx={AdditionalInfo}>
+                <Typography variant="h5" textAlign="center" sx={AdditionalInfo}>
                     Register or Log in to your account
                 </Typography>
                 <Typography
