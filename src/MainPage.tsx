@@ -4,6 +4,7 @@ import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { auth } from '@configs/firebase';
+import { isGuest } from '@models/userTypes';
 import { type RootState } from '@store/store';
 import { resetUserInfo } from '@store/userSlice';
 import { addInfo } from '@store/informationSplice';
@@ -11,8 +12,6 @@ import { InfoMessageStatus, type Information } from '@models/informationType';
 import { InformationDisplay } from './features/informationDisplay/infoSnackBar';
 import LogInButton from './components/LogInButton';
 import { HeaderActions, HeaderRow, NavButton, PageWrapper } from './MainPage.styles';
-
-const isGuest = (user: { name?: string }): boolean => user.name === 'Guest';
 
 const MainPage: React.FC = () => {
     const navigate = useNavigate();
@@ -85,6 +84,16 @@ const MainPage: React.FC = () => {
                     >
                         Learn
                     </Button>
+                    {isLoggedIn && (
+                        <Button
+                            variant={isActivePath('/account') ? 'contained' : 'outlined'}
+                            size="large"
+                            sx={NavButton}
+                            onClick={() => handleNavigate('/account')}
+                        >
+                            Account
+                        </Button>
+                    )}
                     <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
                 </Box>
             </Box>
