@@ -61,10 +61,6 @@ const StocksPage: React.FC = () => {
         return popularStocks ?? [];
     }, [debouncedSearch, searchResults, popularStocks]);
 
-    const selectedPrice = useMemo(() => {
-        return popularStocks?.find((s) => s.symbol === selectedSymbol)?.price ?? 0;
-    }, [popularStocks, selectedSymbol]);
-
     return (
         <Box sx={PageContainer}>
             <Box sx={LeftPanel}>
@@ -128,9 +124,9 @@ const StocksPage: React.FC = () => {
                                 </Typography>
                             </Box>
                         </Box>
-                        {selectedPrice > 0 && (
+                        {profile.price > 0 && (
                             <Typography variant="h4" color="success.main" sx={{ mb: 3 }}>
-                                ${selectedPrice.toFixed(2)}
+                                ${profile.price.toFixed(2)}
                             </Typography>
                         )}
                         <Box sx={ProfileDetails}>

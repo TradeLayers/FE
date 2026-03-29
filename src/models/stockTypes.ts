@@ -24,4 +24,5 @@ export type StockProfile = {
     exchange: string;
     marketCap: number;
     webUrl: string;
+    price: number;
 };
