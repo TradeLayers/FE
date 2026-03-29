@@ -13,8 +13,6 @@ import { InformationDisplay } from './features/informationDisplay/infoSnackBar';
 import LogInButton from './components/LogInButton';
 import { HeaderActions, HeaderRow, NavButton, PageWrapper } from './MainPage.styles';
 
-const isGuest = (user: { name?: string }): boolean => user.name === 'Guest';
-
 const MainPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -85,6 +83,14 @@ const MainPage: React.FC = () => {
                         onClick={() => handleNavigate('/learn')}
                     >
                         Learn
+                    </Button>
+                    <Button
+                        variant={isActivePath('/stocks') ? 'contained' : 'outlined'}
+                        size="large"
+                        sx={NavButton}
+                        onClick={() => handleNavigate('/stocks')}
+                    >
+                        Stocks
                     </Button>
                     {isLoggedIn && (
                         <Button
