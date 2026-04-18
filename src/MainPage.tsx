@@ -94,6 +94,16 @@ const MainPage: React.FC = () => {
                     </Button>
                     {isLoggedIn && (
                         <Button
+                            variant={isActivePath('/compare') ? 'contained' : 'outlined'}
+                            size="large"
+                            sx={NavButton}
+                            onClick={() => handleNavigate('/compare')}
+                        >
+                            Compare
+                        </Button>
+                    )}
+                    {isLoggedIn && (
+                        <Button
                             variant={isActivePath('/account') ? 'contained' : 'outlined'}
                             size="large"
                             sx={NavButton}

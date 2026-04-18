@@ -1,11 +1,19 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDispatch, useSelector } from 'react-redux';
 import { Box, Typography, TextField, Button, Divider } from '@mui/material';
+import StarIcon from '@mui/icons-material/Star';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+
 import { authorizedApi } from '@api/axiosConfig';
+import { addToWatchlist, getWatchlist, removeFromWatchlist } from '@api/watchlistApi';
 import { type StockListItem, type StockSearchResult, type StockProfile } from '@models/stockTypes';
+import { type WatchlistItem } from '@models/watchlistTypes';
 import { isUser } from '@models/userTypes';
 import { type RootState } from '@store/store';
+import { addInfo } from '@store/informationSplice';
+import { InfoMessageStatus } from '@models/informationType';
+import TradeDialog from '../Account/TradeDialog';
 import {
     PageContainer,
     LeftPanel,
@@ -19,9 +27,14 @@ import {
 } from './StocksPage.styles';
 
 const StocksPage: React.FC = () => {
+    const dispatch = useDispatch();
+    const queryClient = useQueryClient();
+
     const [search, setSearch] = useState('');
     const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+    const [buyOpen, setBuyOpen] = useState(false);
 
+    const user = useSelector((state: RootState) => state.userSliceName);
     const loggedIn = useSelector((state: RootState) => isUser(state.userSliceName));
     const debouncedSearch = useDebounce(search, 300);
 
@@ -52,6 +65,41 @@ const StocksPage: React.FC = () => {
             return res.data;
         },
         enabled: loggedIn && !!selectedSymbol,
+    });
+
+    const { data: watchlist } = useQuery<WatchlistItem[]>({
+        queryKey: ['watchlist'],
+        queryFn: getWatchlist,
+        enabled: loggedIn,
+    });
+
+    const watchedSymbols = useMemo(
+        () => new Set((watchlist ?? []).map((w) => w.symbol)),
+        [watchlist],
+    );
+    const isWatched = selectedSymbol ? watchedSymbols.has(selectedSymbol) : false;
+
+    const watchMutation = useMutation({
+        mutationFn: async () => {
+            if (!selectedSymbol) return;
+            if (isWatched) {
+                await removeFromWatchlist(selectedSymbol);
+            } else {
+                await addToWatchlist(selectedSymbol);
+            }
+        },
+        onSuccess: () => {
+            if (!selectedSymbol) return;
+            dispatch(
+                addInfo({
+                    infoMessage: isWatched
+                        ? `${selectedSymbol} removed from watchlist`
+                        : `${selectedSymbol} added to watchlist`,
+                    status: InfoMessageStatus.Success,
+                }),
+            );
+            queryClient.invalidateQueries({ queryKey: ['watchlist'] });
+        },
     });
 
     const listItems = useMemo(() => {
@@ -115,7 +163,7 @@ const StocksPage: React.FC = () => {
                                     style={{ width: 48, height: 48, borderRadius: 8 }}
                                 />
                             )}
-                            <Box>
+                            <Box sx={{ flex: 1 }}>
                                 <Typography variant="h5" fontWeight={700}>
                                     {profile.name}
                                 </Typography>
@@ -123,6 +171,14 @@ const StocksPage: React.FC = () => {
                                     {profile.symbol}
                                 </Typography>
                             </Box>
+                            <Button
+                                variant="outlined"
+                                startIcon={isWatched ? <StarIcon /> : <StarBorderIcon />}
+                                onClick={() => watchMutation.mutate()}
+                                disabled={watchMutation.isPending}
+                            >
+                                {isWatched ? 'Watching' : 'Watch'}
+                            </Button>
                         </Box>
                         {profile.price > 0 && (
                             <Typography variant="h4" color="success.main" sx={{ mb: 3 }}>
@@ -147,7 +203,12 @@ const StocksPage: React.FC = () => {
                                 <Typography>${(profile.marketCap / 1000).toFixed(1)}B</Typography>
                             </Box>
                         </Box>
-                        <Button variant="contained" sx={{ mt: 4, px: 6, py: 1.5 }}>
+                        <Button
+                            variant="contained"
+                            sx={{ mt: 4, px: 6, py: 1.5 }}
+                            disabled={profile.price <= 0}
+                            onClick={() => setBuyOpen(true)}
+                        >
                             Buy
                         </Button>
                     </>
@@ -155,6 +216,18 @@ const StocksPage: React.FC = () => {
                     <Typography color="text.secondary">Select a stock to view details</Typography>
                 )}
             </Box>
+
+            {profile && buyOpen && (
+                <TradeDialog
+                    open={buyOpen}
+                    onClose={() => setBuyOpen(false)}
+                    mode="buy"
+                    symbol={profile.symbol}
+                    name={profile.name}
+                    currentPrice={profile.price}
+                    availableBalance={user.balance}
+                />
+            )}
         </Box>
     );
 };

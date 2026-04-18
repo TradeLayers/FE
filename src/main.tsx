@@ -26,6 +26,7 @@ const AboutPage = lazy(() => import('./features/About/AboutPage.tsx'));
 const LearnPage = lazy(() => import('./features/Learn/LearnPage.tsx'));
 const AccountPage = lazy(() => import('./features/Account/AccountPage.tsx'));
 const StocksPage = lazy(() => import('./features/Stocks/StocksPage.tsx'));
+const ComparePage = lazy(() => import('./features/Compare/ComparePage.tsx'));
 
 const RequireUser: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isLoggedIn = useSelector((state: RootState) => !isGuest(state.userSliceName));
@@ -66,6 +67,14 @@ function Main(): React.JSX.Element {
                     <Route path="about" element={<AboutPage />} />
                     <Route path="learn" element={<LearnPage />} />
                     <Route path="stocks" element={<StocksPage />} />
+                    <Route
+                        path="compare"
+                        element={
+                            <RequireUser>
+                                <ComparePage />
+                            </RequireUser>
+                        }
+                    />
                     <Route
                         path="account"
                         element={
