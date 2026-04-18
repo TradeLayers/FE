@@ -7,7 +7,7 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import store from '@store/store.ts';
 import { addUserInfo } from '@store/userSlice';
 import { auth } from '@configs/firebase';
-import { authorizedApi } from '@api/axiosConfig';
+import { createOrFetchUser } from '@api/userApi';
 import { isGuest } from '@models/userTypes';
 import { type RootState } from '@store/store';
 
@@ -42,16 +42,22 @@ function AuthListener(): null {
     const dispatch = useDispatch();
     useEffect(() => {
         return onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser) {
-                const token = await firebaseUser.getIdToken();
-                dispatch(
-                    addUserInfo({
-                        name: firebaseUser.displayName || firebaseUser.email || 'User',
-                        firebaseId: token,
-                        email: firebaseUser.email || undefined,
-                    }),
-                );
-                authorizedApi.post('/user');
+            if (!firebaseUser) return;
+
+            const token = await firebaseUser.getIdToken();
+            dispatch(
+                addUserInfo({
+                    name: firebaseUser.displayName || firebaseUser.email || 'User',
+                    firebaseId: token,
+                    email: firebaseUser.email || undefined,
+                }),
+            );
+
+            try {
+                const dbUser = await createOrFetchUser();
+                dispatch(addUserInfo(dbUser));
+            } catch {
+                // swallow: already have the auth-only user info in the store
             }
         });
     }, [dispatch]);

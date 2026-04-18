@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     Box,
@@ -34,7 +34,7 @@ import { type RootState } from '@store/store';
 import { addUserInfo, resetUserInfo } from '@store/userSlice';
 import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus, type Information } from '@models/informationType';
-import { deleteUser, updateUserFields } from '@api/userApi';
+import { createOrFetchUser, deleteUser, updateUserFields } from '@api/userApi';
 import { getHoldings, getTransactions } from '@api/portfolioApi';
 import { type HoldingView, type TransactionView } from '@models/portfolioTypes';
 
@@ -60,6 +60,17 @@ const AccountPage: React.FC = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
     const [sellTarget, setSellTarget] = useState<HoldingView | null>(null);
+
+    const userQuery = useQuery({
+        queryKey: ['user'],
+        queryFn: createOrFetchUser,
+    });
+
+    useEffect(() => {
+        if (userQuery.data) {
+            dispatch(addUserInfo(userQuery.data));
+        }
+    }, [userQuery.data, dispatch]);
 
     const holdingsQuery = useQuery<HoldingView[]>({
         queryKey: ['holdings'],
@@ -136,10 +147,7 @@ const AccountPage: React.FC = () => {
         setExpandedSymbol((prev) => (prev === symbol ? null : symbol));
     };
 
-    const transactions = useMemo(
-        () => transactionsQuery.data ?? [],
-        [transactionsQuery.data],
-    );
+    const transactions = useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
     const holdings = useMemo(() => holdingsQuery.data ?? [], [holdingsQuery.data]);
 
     const transactionsBySymbol = useMemo(() => {
@@ -213,7 +221,9 @@ const AccountPage: React.FC = () => {
                                                     <TableCell>
                                                         <IconButton
                                                             size="small"
-                                                            onClick={() => toggleExpand(holding.symbol)}
+                                                            onClick={() =>
+                                                                toggleExpand(holding.symbol)
+                                                            }
                                                             aria-label={`Expand ${holding.symbol}`}
                                                         >
                                                             {expanded ? (
@@ -257,15 +267,23 @@ const AccountPage: React.FC = () => {
                                                                 : 'none',
                                                         }}
                                                     >
-                                                        <Collapse in={expanded} timeout="auto" unmountOnExit>
+                                                        <Collapse
+                                                            in={expanded}
+                                                            timeout="auto"
+                                                            unmountOnExit
+                                                        >
                                                             <Box sx={{ py: 2 }}>
                                                                 <StockStatsCard
                                                                     symbol={holding.symbol}
                                                                     name={holding.name}
                                                                     ownedQuantity={holding.quantity}
-                                                                    currentPrice={holding.currentPrice}
+                                                                    currentPrice={
+                                                                        holding.currentPrice
+                                                                    }
                                                                     transactions={
-                                                                        transactionsBySymbol[holding.symbol] ?? []
+                                                                        transactionsBySymbol[
+                                                                            holding.symbol
+                                                                        ] ?? []
                                                                     }
                                                                 />
                                                             </Box>
@@ -292,9 +310,7 @@ const AccountPage: React.FC = () => {
                     )}
                     {!transactionsQuery.isLoading && transactions.length === 0 && (
                         <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
-                            <Typography color="text.secondary">
-                                No transactions yet.
-                            </Typography>
+                            <Typography color="text.secondary">No transactions yet.</Typography>
                         </Paper>
                     )}
                     {transactions.length > 0 && (
@@ -365,9 +381,13 @@ const AccountPage: React.FC = () => {
                         />
                         <Box>
                             <Typography variant="body2" color="text.secondary">
-                                Holdings Balance
+                                Available Balance
                             </Typography>
-                            <Typography variant="h6">{user.balance}</Typography>
+                            <Typography variant="h6">
+                                {user.balance !== undefined
+                                    ? formatCurrency(Number(user.balance))
+                                    : '—'}
+                            </Typography>
                         </Box>
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                             <Button
