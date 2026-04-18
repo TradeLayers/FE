@@ -1,12 +1,14 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     Box,
     Button,
+    Collapse,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
+    IconButton,
     Paper,
     Stack,
     Tab,
@@ -20,96 +22,71 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
+import { useQuery } from '@tanstack/react-query';
 
 import { auth } from '@configs/firebase';
 import { type RootState } from '@store/store';
 import { addUserInfo, resetUserInfo } from '@store/userSlice';
 import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus, type Information } from '@models/informationType';
-import { type StockTransaction } from '@models/stockTransactions.Types';
-import { type UserHoldings } from '@models/userHoldingsTypes';
-import { deleteUser, updateUserFields } from '@api/userApi';
+import { createOrFetchUser, deleteUser, updateUserFields } from '@api/userApi';
+import { getHoldings, getTransactions } from '@api/portfolioApi';
+import { type HoldingView, type TransactionView } from '@models/portfolioTypes';
 
-type TabValue = 'account' | 'holdings' | 'transactions';
+import PortfolioChart from './PortfolioChart';
+import WatchlistPanel from './WatchlistPanel';
+import StockStatsCard from './StockStatsCard';
+import TradeDialog from './TradeDialog';
+import { formatCurrency, formatDateTime, formatQuantity } from './format';
 
-const boughtType = 'BOUGHT' as StockTransaction['transactionType'];
-const sellType = 'SELL' as StockTransaction['transactionType'];
-
-const mockHoldings: UserHoldings[] = [
-    {
-        stock: { stockName: 'Apple', symbol: 'AAPL' },
-        quantity: 12,
-    },
-    {
-        stock: { stockName: 'Microsoft', symbol: 'MSFT' },
-        quantity: 8,
-    },
-    {
-        stock: { stockName: 'NVIDIA', symbol: 'NVDA' },
-        quantity: 5,
-    },
-];
-
-const mockTransactions: StockTransaction[] = [
-    {
-        stock: { stockName: 'Apple', symbol: 'AAPL' },
-        price: 178.9,
-        quantity: 4,
-        transactionDate: new Date('2026-03-20T08:30:00Z'),
-        transactionType: boughtType,
-    },
-    {
-        stock: { stockName: 'Microsoft', symbol: 'MSFT' },
-        price: 414.55,
-        quantity: 2,
-        transactionDate: new Date('2026-03-22T14:10:00Z'),
-        transactionType: boughtType,
-    },
-    {
-        stock: { stockName: 'Apple', symbol: 'AAPL' },
-        price: 184.1,
-        quantity: 1,
-        transactionDate: new Date('2026-03-25T09:50:00Z'),
-        transactionType: sellType,
-    },
-];
-
-const formatCurrency = (value: number): string =>
-    new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(value);
+type TabValue = 'account' | 'holdings' | 'transactions' | 'watchlist';
 
 const AccountPage: React.FC = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const user = useSelector((state: RootState) => state.userSliceName);
 
-    const [selectedTab, setSelectedTab] = useState<TabValue>('account');
+    const [selectedTab, setSelectedTab] = useState<TabValue>('holdings');
     const [nameInput, setNameInput] = useState(user.name ?? '');
     const [emailInput, setEmailInput] = useState(user.email ?? '');
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [localError, setLocalError] = useState<string | null>(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
+    const [sellTarget, setSellTarget] = useState<HoldingView | null>(null);
 
-    const holdingsToShow = useMemo(() => {
-        return mockHoldings;
-    }, []);
+    const userQuery = useQuery({
+        queryKey: ['user'],
+        queryFn: createOrFetchUser,
+    });
 
-    const transactionsToShow = useMemo(() => {
-        return mockTransactions;
-    }, []);
+    useEffect(() => {
+        if (userQuery.data) {
+            dispatch(addUserInfo(userQuery.data));
+        }
+    }, [userQuery.data, dispatch]);
+
+    const holdingsQuery = useQuery<HoldingView[]>({
+        queryKey: ['holdings'],
+        queryFn: getHoldings,
+    });
+
+    const transactionsQuery = useQuery<TransactionView[]>({
+        queryKey: ['transactions'],
+        queryFn: () => getTransactions(),
+    });
 
     const pushInfoMessage = (message: string, status: InfoMessageStatus): void => {
         const infoMess: Information = {
             infoMessage: message,
             status,
         };
-
         dispatch(addInfo(infoMess));
     };
 
@@ -135,7 +112,6 @@ const AccountPage: React.FC = () => {
                 name: trimmedName || undefined,
                 email: trimmedEmail || undefined,
             });
-
             dispatch(addUserInfo(updatedUser));
             setNameInput(updatedUser.name ?? '');
             setEmailInput(updatedUser.email ?? '');
@@ -146,14 +122,6 @@ const AccountPage: React.FC = () => {
         } finally {
             setIsSaving(false);
         }
-    };
-
-    const handleOpenDeleteConfirm = (): void => {
-        setShowDeleteConfirm(true);
-    };
-
-    const handleCloseDeleteConfirm = (): void => {
-        setShowDeleteConfirm(false);
     };
 
     const handleConfirmDelete = async (): Promise<void> => {
@@ -175,6 +143,22 @@ const AccountPage: React.FC = () => {
         }
     };
 
+    const toggleExpand = (symbol: string): void => {
+        setExpandedSymbol((prev) => (prev === symbol ? null : symbol));
+    };
+
+    const transactions = useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
+    const holdings = useMemo(() => holdingsQuery.data ?? [], [holdingsQuery.data]);
+
+    const transactionsBySymbol = useMemo(() => {
+        const map: Record<string, TransactionView[]> = {};
+        for (const t of transactions) {
+            if (!map[t.symbol]) map[t.symbol] = [];
+            map[t.symbol].push(t);
+        }
+        return map;
+    }, [transactions]);
+
     return (
         <Box>
             <Typography variant="h5" component="h2" gutterBottom>
@@ -188,10 +172,195 @@ const AccountPage: React.FC = () => {
                 variant="scrollable"
                 scrollButtons="auto"
             >
-                <Tab label="Account" value="account" />
                 <Tab label="Holdings" value="holdings" />
                 <Tab label="Transaction History" value="transactions" />
+                <Tab label="Watchlist" value="watchlist" />
+                <Tab label="Account" value="account" />
             </Tabs>
+
+            {selectedTab === 'holdings' && (
+                <Stack spacing={2}>
+                    <PortfolioChart />
+
+                    {holdingsQuery.isLoading && (
+                        <Typography color="text.secondary">Loading holdings...</Typography>
+                    )}
+                    {holdingsQuery.error && (
+                        <Alert severity="error">Failed to load holdings.</Alert>
+                    )}
+
+                    {!holdingsQuery.isLoading && holdings.length === 0 && (
+                        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+                            <Typography color="text.secondary">
+                                You don&apos;t own any stocks yet. Visit the Stocks page to buy.
+                            </Typography>
+                        </Paper>
+                    )}
+
+                    {holdings.length > 0 && (
+                        <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell width={48} />
+                                        <TableCell>Symbol</TableCell>
+                                        <TableCell>Company</TableCell>
+                                        <TableCell align="right">Quantity</TableCell>
+                                        <TableCell align="right">Price</TableCell>
+                                        <TableCell align="right">Value</TableCell>
+                                        <TableCell align="right" />
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {holdings.map((holding) => {
+                                        const expanded = expandedSymbol === holding.symbol;
+                                        const value = holding.quantity * holding.currentPrice;
+                                        return (
+                                            <Fragment key={holding.symbol}>
+                                                <TableRow>
+                                                    <TableCell>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() =>
+                                                                toggleExpand(holding.symbol)
+                                                            }
+                                                            aria-label={`Expand ${holding.symbol}`}
+                                                        >
+                                                            {expanded ? (
+                                                                <KeyboardArrowUpIcon fontSize="small" />
+                                                            ) : (
+                                                                <KeyboardArrowDownIcon fontSize="small" />
+                                                            )}
+                                                        </IconButton>
+                                                    </TableCell>
+                                                    <TableCell>{holding.symbol}</TableCell>
+                                                    <TableCell>{holding.name}</TableCell>
+                                                    <TableCell align="right">
+                                                        {formatQuantity(holding.quantity)}
+                                                    </TableCell>
+                                                    <TableCell align="right">
+                                                        {holding.currentPrice > 0
+                                                            ? formatCurrency(holding.currentPrice)
+                                                            : '—'}
+                                                    </TableCell>
+                                                    <TableCell align="right">
+                                                        {formatCurrency(value)}
+                                                    </TableCell>
+                                                    <TableCell align="right">
+                                                        <Button
+                                                            size="small"
+                                                            variant="outlined"
+                                                            color="error"
+                                                            onClick={() => setSellTarget(holding)}
+                                                        >
+                                                            Sell
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                                <TableRow>
+                                                    <TableCell
+                                                        colSpan={7}
+                                                        sx={{
+                                                            py: 0,
+                                                            borderBottom: expanded
+                                                                ? undefined
+                                                                : 'none',
+                                                        }}
+                                                    >
+                                                        <Collapse
+                                                            in={expanded}
+                                                            timeout="auto"
+                                                            unmountOnExit
+                                                        >
+                                                            <Box sx={{ py: 2 }}>
+                                                                <StockStatsCard
+                                                                    symbol={holding.symbol}
+                                                                    name={holding.name}
+                                                                    ownedQuantity={holding.quantity}
+                                                                    currentPrice={
+                                                                        holding.currentPrice
+                                                                    }
+                                                                    transactions={
+                                                                        transactionsBySymbol[
+                                                                            holding.symbol
+                                                                        ] ?? []
+                                                                    }
+                                                                />
+                                                            </Box>
+                                                        </Collapse>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </Fragment>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+                </Stack>
+            )}
+
+            {selectedTab === 'transactions' && (
+                <>
+                    {transactionsQuery.isLoading && (
+                        <Typography color="text.secondary">Loading transactions...</Typography>
+                    )}
+                    {transactionsQuery.error && (
+                        <Alert severity="error">Failed to load transactions.</Alert>
+                    )}
+                    {!transactionsQuery.isLoading && transactions.length === 0 && (
+                        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+                            <Typography color="text.secondary">No transactions yet.</Typography>
+                        </Paper>
+                    )}
+                    {transactions.length > 0 && (
+                        <TableContainer component={Paper} variant="outlined">
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Date</TableCell>
+                                        <TableCell>Type</TableCell>
+                                        <TableCell>Symbol</TableCell>
+                                        <TableCell align="right">Quantity</TableCell>
+                                        <TableCell align="right">Price</TableCell>
+                                        <TableCell align="right">Total</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {[...transactions]
+                                        .sort(
+                                            (a, b) =>
+                                                new Date(b.transactionDate).getTime() -
+                                                new Date(a.transactionDate).getTime(),
+                                        )
+                                        .map((t) => (
+                                            <TableRow key={t.id}>
+                                                <TableCell>
+                                                    {formatDateTime(t.transactionDate)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {t.transactionType.toUpperCase()}
+                                                </TableCell>
+                                                <TableCell>{t.symbol}</TableCell>
+                                                <TableCell align="right">
+                                                    {formatQuantity(t.quantity)}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    {formatCurrency(t.price)}
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    {formatCurrency(t.price * t.quantity)}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+                </>
+            )}
+
+            {selectedTab === 'watchlist' && <WatchlistPanel />}
 
             {selectedTab === 'account' && (
                 <Paper variant="outlined" sx={{ p: 2, maxWidth: 700 }}>
@@ -212,9 +381,13 @@ const AccountPage: React.FC = () => {
                         />
                         <Box>
                             <Typography variant="body2" color="text.secondary">
-                                Holdings Balance
+                                Available Balance
                             </Typography>
-                            <Typography variant="h6">{user.balance}</Typography>
+                            <Typography variant="h6">
+                                {user.balance !== undefined
+                                    ? formatCurrency(Number(user.balance))
+                                    : '—'}
+                            </Typography>
                         </Box>
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
                             <Button
@@ -227,7 +400,7 @@ const AccountPage: React.FC = () => {
                             <Button
                                 variant="outlined"
                                 color="error"
-                                onClick={handleOpenDeleteConfirm}
+                                onClick={() => setShowDeleteConfirm(true)}
                                 disabled={isSaving || isDeleting}
                             >
                                 Delete Account
@@ -237,63 +410,19 @@ const AccountPage: React.FC = () => {
                 </Paper>
             )}
 
-            {selectedTab === 'holdings' && (
-                <TableContainer component={Paper} variant="outlined">
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Symbol</TableCell>
-                                <TableCell>Company</TableCell>
-                                <TableCell align="right">Quantity</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {holdingsToShow.map((holding) => (
-                                <TableRow key={holding.stock.symbol}>
-                                    <TableCell>{holding.stock.symbol}</TableCell>
-                                    <TableCell>{holding.stock.stockName}</TableCell>
-                                    <TableCell align="right">{holding.quantity}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+            {sellTarget && (
+                <TradeDialog
+                    open={!!sellTarget}
+                    onClose={() => setSellTarget(null)}
+                    mode="sell"
+                    symbol={sellTarget.symbol}
+                    name={sellTarget.name}
+                    currentPrice={sellTarget.currentPrice}
+                    ownedQuantity={sellTarget.quantity}
+                />
             )}
 
-            {selectedTab === 'transactions' && (
-                <TableContainer component={Paper} variant="outlined">
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Symbol</TableCell>
-                                <TableCell align="right">Quantity</TableCell>
-                                <TableCell align="right">Price</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {transactionsToShow.map((transaction, index) => (
-                                <TableRow
-                                    key={`${transaction.stock.symbol}-${transaction.transactionDate.toISOString()}-${index}`}
-                                >
-                                    <TableCell>
-                                        {transaction.transactionDate.toLocaleDateString()}
-                                    </TableCell>
-                                    <TableCell>{transaction.transactionType}</TableCell>
-                                    <TableCell>{transaction.stock.symbol}</TableCell>
-                                    <TableCell align="right">{transaction.quantity}</TableCell>
-                                    <TableCell align="right">
-                                        {formatCurrency(transaction.price)}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-
-            <Dialog open={showDeleteConfirm} onClose={handleCloseDeleteConfirm}>
+            <Dialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)}>
                 <DialogTitle>Delete Account</DialogTitle>
                 <DialogContent>
                     <Typography variant="body2">
@@ -301,7 +430,7 @@ const AccountPage: React.FC = () => {
                     </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDeleteConfirm}>Cancel</Button>
+                    <Button onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
                     <Button
                         onClick={handleConfirmDelete}
                         color="error"
