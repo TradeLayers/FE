@@ -14,3 +14,14 @@ export const addToWatchlist = async (symbol: string): Promise<WatchlistItem> => 
 export const removeFromWatchlist = async (symbol: string): Promise<void> => {
     await authorizedApi.delete(`/watchlist/${encodeURIComponent(symbol)}`);
 };
+
+export const updateWatchlistThreshold = async (
+    symbol: string,
+    thresholdPrice: number,
+): Promise<WatchlistItem> => {
+    const response = await authorizedApi.patch<WatchlistItem>(
+        `/watchlist/${encodeURIComponent(symbol)}/threshold`,
+        { thresholdPrice },
+    );
+    return response.data;
+};
