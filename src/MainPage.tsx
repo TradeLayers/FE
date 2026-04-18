@@ -1,4 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Box, Button } from '@mui/material';
 import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,6 +13,9 @@ import { InfoMessageStatus, type Information } from '@models/informationType';
 import { InformationDisplay } from './features/informationDisplay/infoSnackBar';
 import LogInButton from './components/LogInButton';
 import { HeaderActions, HeaderRow, NavButton, PageWrapper } from './MainPage.styles';
+import { getUnreadNotifications, markNotificationAsRead } from '@api/notificationsApi';
+
+const NOTIFICATION_POLL_INTERVAL_MS = 15000;
 
 const MainPage: React.FC = () => {
     const navigate = useNavigate();
@@ -43,6 +47,48 @@ const MainPage: React.FC = () => {
     };
 
     const isActivePath = (path: string): boolean => location.pathname === path;
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            return;
+        }
+
+        let cancelled = false;
+
+        const checkNotifications = async (): Promise<void> => {
+            try {
+                const unread = await getUnreadNotifications();
+                if (cancelled || unread.length === 0) {
+                    return;
+                }
+
+                await Promise.allSettled(unread.map((n) => markNotificationAsRead(n.id)));
+
+                const latest = unread[0];
+                dispatch(
+                    addInfo({
+                        infoMessage:
+                            unread.length === 1
+                                ? latest.message
+                                : `${unread.length} threshold alerts reached. Latest: ${latest.message}`,
+                        status: InfoMessageStatus.Success,
+                    }),
+                );
+            } catch {
+                // Ignore transient notification polling failures.
+            }
+        };
+
+        void checkNotifications();
+        const intervalId = window.setInterval(() => {
+            void checkNotifications();
+        }, NOTIFICATION_POLL_INTERVAL_MS);
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(intervalId);
+        };
+    }, [dispatch, isLoggedIn]);
 
     return (
         <Box sx={PageWrapper}>
