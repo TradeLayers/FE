@@ -85,7 +85,7 @@ const MainPage: React.FC = () => {
             void checkNotifications();
         }, NOTIFICATION_POLL_INTERVAL_MS);
 
-        return () => {
+        return (): void => {
             cancelled = true;
             window.clearInterval(intervalId);
         };
@@ -138,6 +138,14 @@ const MainPage: React.FC = () => {
                         onClick={() => handleNavigate('/stocks')}
                     >
                         Stocks
+                    </Button>
+                    <Button
+                        variant={isActivePath('/donate') ? 'contained' : 'outlined'}
+                        size="large"
+                        sx={NavButton}
+                        onClick={() => handleNavigate('/donate')}
+                    >
+                        Donate
                     </Button>
                     {isLoggedIn && (
                         <Button

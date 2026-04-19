@@ -1,4 +1,13 @@
-import { Box, Divider, List, ListItem, ListItemText, Paper, Stack, Typography } from '@mui/material';
+import {
+    Box,
+    Divider,
+    List,
+    ListItem,
+    ListItemText,
+    Paper,
+    Stack,
+    Typography,
+} from '@mui/material';
 
 const sections: Array<{ title: string; points: string[] }> = [
     {
@@ -60,7 +69,8 @@ const LearnPage: React.FC = () => {
                         Learn Stock Tracker
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                        This page explains how to use the app end-to-end, including watchlist thresholds and notifications.
+                        This page explains how to use the app end-to-end, including watchlist
+                        thresholds and notifications.
                     </Typography>
                 </Box>
 

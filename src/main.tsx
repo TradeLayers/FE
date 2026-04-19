@@ -26,6 +26,7 @@ const LoginPage = lazy(() => import('./features/Login/LoginPage.tsx'));
 const HomePage = lazy(() => import('./features/Home/HomePage.tsx'));
 const AboutPage = lazy(() => import('./features/About/AboutPage.tsx'));
 const LearnPage = lazy(() => import('./features/Learn/LearnPage.tsx'));
+const DonationPage = lazy(() => import('./features/Donation/DonationPage.tsx'));
 const AccountPage = lazy(() => import('./features/Account/AccountPage.tsx'));
 const StocksPage = lazy(() => import('./features/Stocks/StocksPage.tsx'));
 const ComparePage = lazy(() => import('./features/Compare/ComparePage.tsx'));
@@ -83,6 +84,7 @@ function Main(): React.JSX.Element {
                     <Route index element={<HomePage />} />
                     <Route path="about" element={<AboutPage />} />
                     <Route path="learn" element={<LearnPage />} />
+                    <Route path="donate" element={<DonationPage />} />
                     <Route path="stocks" element={<StocksPage />} />
                     <Route
                         path="compare"

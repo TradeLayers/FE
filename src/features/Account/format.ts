@@ -9,8 +9,6 @@ export const formatQuantity = (value: number): string =>
         maximumFractionDigits: 4,
     }).format(value);
 
-export const formatDate = (isoDate: string): string =>
-    new Date(isoDate).toLocaleDateString();
+export const formatDate = (isoDate: string): string => new Date(isoDate).toLocaleDateString();
 
-export const formatDateTime = (isoDate: string): string =>
-    new Date(isoDate).toLocaleString();
+export const formatDateTime = (isoDate: string): string => new Date(isoDate).toLocaleString();

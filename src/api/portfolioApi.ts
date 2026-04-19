@@ -19,7 +19,9 @@ export type TransactionQuery = {
     to?: string;
 };
 
-export const getTransactions = async (params: TransactionQuery = {}): Promise<TransactionView[]> => {
+export const getTransactions = async (
+    params: TransactionQuery = {},
+): Promise<TransactionView[]> => {
     const response = await authorizedApi.get<TransactionView[]>('/portfolio/transactions', {
         params,
     });

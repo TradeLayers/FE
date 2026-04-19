@@ -53,15 +53,14 @@ const TradeDialog: React.FC<Props> = ({
     const validQuantity = Number.isFinite(quantity) && quantity > 0;
     const estimated = validQuantity ? currentPrice * quantity : 0;
 
-    const exceedsHoldings = mode === 'sell' && ownedQuantity !== undefined && quantity > ownedQuantity;
+    const exceedsHoldings =
+        mode === 'sell' && ownedQuantity !== undefined && quantity > ownedQuantity;
     const exceedsBalance =
         mode === 'buy' && availableBalance !== undefined && estimated > availableBalance;
 
     const mutation = useMutation<TradeResult, unknown, void>({
         mutationFn: () =>
-            mode === 'buy'
-                ? buyStock({ symbol, quantity })
-                : sellStock({ symbol, quantity }),
+            mode === 'buy' ? buyStock({ symbol, quantity }) : sellStock({ symbol, quantity }),
         onSuccess: (result) => {
             dispatch(
                 addInfo({
@@ -78,7 +77,11 @@ const TradeDialog: React.FC<Props> = ({
     });
 
     const confirmDisabled =
-        !validQuantity || exceedsHoldings || exceedsBalance || mutation.isPending || currentPrice <= 0;
+        !validQuantity ||
+        exceedsHoldings ||
+        exceedsBalance ||
+        mutation.isPending ||
+        currentPrice <= 0;
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
@@ -134,9 +137,7 @@ const TradeDialog: React.FC<Props> = ({
                         </Alert>
                     )}
                     {exceedsBalance && (
-                        <Alert severity="error">
-                            Insufficient balance for this purchase.
-                        </Alert>
+                        <Alert severity="error">Insufficient balance for this purchase.</Alert>
                     )}
                     {currentPrice <= 0 && (
                         <Alert severity="warning">
