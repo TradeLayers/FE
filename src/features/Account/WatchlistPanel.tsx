@@ -182,9 +182,16 @@ const WatchlistPanel: React.FC = () => {
                                     <TextField
                                         size="small"
                                         type="number"
-                                        value={thresholdInputs[item.symbol] ?? thresholdInputDefaults[item.symbol] ?? ''}
+                                        value={
+                                            thresholdInputs[item.symbol] ??
+                                            thresholdInputDefaults[item.symbol] ??
+                                            ''
+                                        }
                                         onChange={(event) =>
-                                            handleThresholdInputChange(item.symbol, event.target.value)
+                                            handleThresholdInputChange(
+                                                item.symbol,
+                                                event.target.value,
+                                            )
                                         }
                                         inputProps={{ min: 0, step: 0.01 }}
                                         placeholder="0.00"

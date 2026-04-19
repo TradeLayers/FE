@@ -43,7 +43,12 @@ const PortfolioChart: React.FC = () => {
 
     return (
         <Paper variant="outlined" sx={{ p: 2 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems="flex-start">
+            <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                justifyContent="space-between"
+                alignItems="flex-start"
+            >
                 <Box>
                     <Typography variant="h6">Portfolio</Typography>
                     <Typography variant="body2" color="text.secondary">

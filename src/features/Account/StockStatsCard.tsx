@@ -134,7 +134,11 @@ const StockStatsCard: React.FC<Props> = ({
     );
 };
 
-const Stat: React.FC<{ label: string; value: string; color?: string }> = ({ label, value, color }) => (
+const Stat: React.FC<{ label: string; value: string; color?: string }> = ({
+    label,
+    value,
+    color,
+}) => (
     <Box>
         <Typography variant="caption" color="text.secondary">
             {label}
