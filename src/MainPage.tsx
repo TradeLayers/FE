@@ -12,6 +12,7 @@ import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus, type Information } from '@models/informationType';
 import { InformationDisplay } from './features/informationDisplay/infoSnackBar';
 import LogInButton from './components/LogInButton';
+import ThemeToggleButton from './components/ThemeToggleButton';
 import { HeaderActions, HeaderRow, NavButton, PageWrapper } from './MainPage.styles';
 import { getUnreadNotifications, markNotificationAsRead } from '@api/notificationsApi';
 
@@ -158,6 +159,7 @@ const MainPage: React.FC = () => {
                             Account
                         </Button>
                     )}
+                    <ThemeToggleButton />
                     <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
                 </Box>
             </Box>

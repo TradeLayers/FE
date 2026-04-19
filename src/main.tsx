@@ -1,4 +1,4 @@
-import { StrictMode, lazy, useEffect } from 'react';
+import { StrictMode, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -15,9 +15,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import MainTheme from './styles/theme.ts';
+import { ThemeModeContext } from './styles/ThemeModeContext.ts';
+import { getMainTheme, type MainThemeMode } from './styles/theme.ts';
 
 const queryClient = new QueryClient();
+const THEME_STORAGE_KEY = 'tradeLayersThemeMode';
 
 const MainPage = lazy(() => import('./MainPage.tsx'));
 const LoginPage = lazy(() => import('./features/Login/LoginPage.tsx'));
@@ -27,6 +29,15 @@ const LearnPage = lazy(() => import('./features/Learn/LearnPage.tsx'));
 const AccountPage = lazy(() => import('./features/Account/AccountPage.tsx'));
 const StocksPage = lazy(() => import('./features/Stocks/StocksPage.tsx'));
 const ComparePage = lazy(() => import('./features/Compare/ComparePage.tsx'));
+
+const isMainThemeMode = (value: string | null): value is MainThemeMode =>
+    value === 'light' || value === 'dark';
+
+const getInitialThemeMode = (): MainThemeMode => {
+    const savedMode = window.localStorage.getItem(THEME_STORAGE_KEY);
+
+    return isMainThemeMode(savedMode) ? savedMode : 'dark';
+};
 
 const RequireUser: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isLoggedIn = useSelector((state: RootState) => !isGuest(state.userSliceName));
@@ -97,15 +108,41 @@ function Main(): React.JSX.Element {
     );
 }
 
+function AppThemeProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
+    const [mode, setMode] = useState<MainThemeMode>(getInitialThemeMode);
+    const theme = useMemo(() => getMainTheme(mode), [mode]);
+    const toggleMode = useCallback(() => {
+        setMode((currentMode) => (currentMode === 'dark' ? 'light' : 'dark'));
+    }, []);
+
+    useEffect(() => {
+        window.localStorage.setItem(THEME_STORAGE_KEY, mode);
+    }, [mode]);
+
+    const themeModeContext = useMemo(
+        () => ({
+            mode,
+            toggleMode,
+        }),
+        [mode, toggleMode],
+    );
+
+    return (
+        <ThemeModeContext.Provider value={themeModeContext}>
+            <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        </ThemeModeContext.Provider>
+    );
+}
+
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <QueryClientProvider client={queryClient}>
             <Provider store={store}>
-                <ThemeProvider theme={MainTheme}>
+                <AppThemeProvider>
                     <CssBaseline />
                     <AuthListener />
                     <Main />
-                </ThemeProvider>
+                </AppThemeProvider>
             </Provider>
             <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
