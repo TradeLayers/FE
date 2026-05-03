@@ -14,7 +14,7 @@ export const InformationDisplay: React.FC = () => {
 
     const handleOpen: boolean = information.status !== InfoMessageStatus.None;
 
-    const handleClose = () => {
+    const handleClose = (): void => {
         dispatch(resetInfo());
     };
 

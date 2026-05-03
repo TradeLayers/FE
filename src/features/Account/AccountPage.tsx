@@ -20,8 +20,10 @@ import {
     TableHead,
     TableRow,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useDispatch, useSelector } from 'react-redux';
@@ -35,17 +37,18 @@ import { addUserInfo, resetUserInfo } from '@store/userSlice';
 import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus, type Information } from '@models/informationType';
 import { createOrFetchUser, deleteUser, updateUserFields } from '@api/userApi';
-import { getHoldings, getTransactions } from '@api/portfolioApi';
+import { getHoldings, getTransactions, getTransactionsCsv } from '@api/portfolioApi';
 import { type HoldingView, type TransactionView } from '@models/portfolioTypes';
 
 import PortfolioChart from './PortfolioChart';
+import AlertsPanel from './AlertsPanel';
 import WatchlistPanel from './WatchlistPanel';
 import StockStatsCard from './StockStatsCard';
 import TradeDialog from './TradeDialog';
 import { formatCurrency, formatDateTime, formatQuantity } from './format';
 import HoldingLogo from '../../components/HoldingLogo';
 
-type TabValue = 'account' | 'holdings' | 'transactions' | 'watchlist';
+type TabValue = 'account' | 'holdings' | 'transactions' | 'watchlist' | 'alerts';
 
 const AccountPage: React.FC = () => {
     const dispatch = useDispatch();
@@ -62,6 +65,7 @@ const AccountPage: React.FC = () => {
     const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
     const [sellTarget, setSellTarget] = useState<HoldingView | null>(null);
     const [txFilter, setTxFilter] = useState('');
+    const [isExportingCsv, setIsExportingCsv] = useState(false);
 
     const userQuery = useQuery({
         queryKey: ['user'],
@@ -149,6 +153,23 @@ const AccountPage: React.FC = () => {
         setExpandedSymbol((prev) => (prev === symbol ? null : symbol));
     };
 
+    const handleExportCsv = async (): Promise<void> => {
+        setIsExportingCsv(true);
+        try {
+            const blob = await getTransactionsCsv();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'transactions.csv';
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch {
+            pushInfoMessage('Failed to export transactions.', InfoMessageStatus.Error);
+        } finally {
+            setIsExportingCsv(false);
+        }
+    };
+
     const transactions = useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
     const holdings = useMemo(() => holdingsQuery.data ?? [], [holdingsQuery.data]);
 
@@ -188,6 +209,7 @@ const AccountPage: React.FC = () => {
                 <Tab label="Holdings" value="holdings" />
                 <Tab label="Transaction History" value="transactions" />
                 <Tab label="Watchlist" value="watchlist" />
+                <Tab label="Alerts" value="alerts" />
                 <Tab label="Account" value="account" />
             </Tabs>
 
@@ -276,7 +298,7 @@ const AccountPage: React.FC = () => {
                                                 </TableRow>
                                                 <TableRow>
                                                     <TableCell
-                                                        colSpan={7}
+                                                        colSpan={8}
                                                         sx={{
                                                             py: 0,
                                                             borderBottom: expanded
@@ -319,6 +341,26 @@ const AccountPage: React.FC = () => {
 
             {selectedTab === 'transactions' && (
                 <>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1.5 }}>
+                        <Tooltip
+                            title={
+                                transactions.length === 0
+                                    ? 'No transactions to export'
+                                    : 'Export transaction history'
+                            }
+                        >
+                            <span>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<FileDownloadIcon />}
+                                    onClick={handleExportCsv}
+                                    disabled={transactions.length === 0 || isExportingCsv}
+                                >
+                                    Export CSV
+                                </Button>
+                            </span>
+                        </Tooltip>
+                    </Box>
                     {transactionsQuery.isLoading && (
                         <Typography color="text.secondary">Loading transactions...</Typography>
                     )}
@@ -401,6 +443,8 @@ const AccountPage: React.FC = () => {
             )}
 
             {selectedTab === 'watchlist' && <WatchlistPanel />}
+
+            {selectedTab === 'alerts' && <AlertsPanel />}
 
             {selectedTab === 'account' && (
                 <Paper variant="outlined" sx={{ p: 2, maxWidth: 700 }}>

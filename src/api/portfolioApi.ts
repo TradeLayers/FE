@@ -28,6 +28,13 @@ export const getTransactions = async (
     return response.data;
 };
 
+export const getTransactionsCsv = async (): Promise<Blob> => {
+    const response = await authorizedApi.get<Blob>('/portfolio/transactions.csv', {
+        responseType: 'blob',
+    });
+    return response.data;
+};
+
 export const getPortfolioHistory = async (
     interval: PortfolioInterval = 'all',
 ): Promise<PortfolioHistoryResponse> => {
