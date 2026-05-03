@@ -225,7 +225,7 @@ const StocksPage: React.FC = () => {
                     symbol={profile.symbol}
                     name={profile.name}
                     currentPrice={profile.price}
-                    availableBalance={user.balance}
+                    availableBalance={typeof user.balance === 'string' ? parseFloat(user.balance) : user.balance}
                 />
             )}
         </Box>

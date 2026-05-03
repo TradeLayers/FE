@@ -23,6 +23,12 @@ const MainPage: React.FC = () => {
     const location = useLocation();
     const dispatch = useDispatch();
     const isLoggedIn = useSelector((state: RootState) => !isGuest(state.userSliceName));
+    const userBalance = useSelector((state: RootState) => {
+        const balance = state.userSliceName.balance;
+        if (typeof balance === 'number') return balance;
+        if (typeof balance === 'string') return parseFloat(balance);
+        return 0;
+    });
 
     const handleAuthButtonClick = async (): Promise<void> => {
         if (!isLoggedIn) {
@@ -166,6 +172,21 @@ const MainPage: React.FC = () => {
                         >
                             Account
                         </Button>
+                    )}
+                    {isLoggedIn && (
+                        <Box sx={{ 
+                            px: 2, 
+                            py: 1, 
+                            backgroundColor: 'action.hover',
+                            borderRadius: 1,
+                            minWidth: 120,
+                            textAlign: 'center'
+                        }}>
+                            <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Balance</Box>
+                            <Box sx={{ fontSize: '1.25rem', fontWeight: 600, color: 'primary.main' }}>
+                                ${userBalance.toFixed(2)}
+                            </Box>
+                        </Box>
                     )}
                     <ThemeToggleButton />
                     <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />

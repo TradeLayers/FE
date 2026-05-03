@@ -12,12 +12,14 @@ import {
     Typography,
 } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { buyStock, sellStock } from '@api/portfolioApi';
 import { type TradeResult } from '@models/portfolioTypes';
 import { addInfo } from '@store/informationSplice';
+import { addUserInfo } from '@store/userSlice';
 import { InfoMessageStatus } from '@models/informationType';
+import { type RootState } from '@store/store';
 import { formatCurrency, formatQuantity } from './format';
 
 export type TradeMode = 'buy' | 'sell';
@@ -45,6 +47,7 @@ const TradeDialog: React.FC<Props> = ({
 }) => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
+    const currentUser = useSelector((state: RootState) => state.userSliceName);
     // Parent conditionally renders this dialog, so useState reinitializes on
     // every mount — no need for an effect to reset quantity on open.
     const [quantityInput, setQuantityInput] = useState('1');
@@ -68,6 +71,7 @@ const TradeDialog: React.FC<Props> = ({
                     status: InfoMessageStatus.Success,
                 }),
             );
+            dispatch(addUserInfo({ ...currentUser, balance: result.balance }));
             queryClient.invalidateQueries({ queryKey: ['holdings'] });
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
             queryClient.invalidateQueries({ queryKey: ['portfolioHistory'] });

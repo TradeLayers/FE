@@ -2,7 +2,7 @@ export type User = {
     name: string;
     firebaseId?: string;
     email?: string;
-    balance?: number;
+    balance?: number | string;
     createdAt?: Date;
     lastOnline?: Date;
 };
