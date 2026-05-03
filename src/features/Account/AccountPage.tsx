@@ -60,6 +60,7 @@ const AccountPage: React.FC = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
     const [sellTarget, setSellTarget] = useState<HoldingView | null>(null);
+    const [txFilter, setTxFilter] = useState('');
 
     const userQuery = useQuery({
         queryKey: ['user'],
@@ -149,6 +150,17 @@ const AccountPage: React.FC = () => {
 
     const transactions = useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
     const holdings = useMemo(() => holdingsQuery.data ?? [], [holdingsQuery.data]);
+
+    const filteredTransactions = useMemo(() => {
+        const q = txFilter.trim().toLowerCase();
+        if (!q) return transactions;
+        return transactions.filter((t) => (t.symbol || '').toLowerCase().includes(q));
+    }, [transactions, txFilter]);
+
+    useEffect(() => {
+        // Clear filter when leaving the transactions tab so state doesn't persist
+        if (selectedTab !== 'transactions') setTxFilter('');
+    }, [selectedTab]);
 
     const transactionsBySymbol = useMemo(() => {
         const map: Record<string, TransactionView[]> = {};
@@ -313,7 +325,28 @@ const AccountPage: React.FC = () => {
                             <Typography color="text.secondary">No transactions yet.</Typography>
                         </Paper>
                     )}
+
+                    {/* Filter input shown when there are transactions */}
                     {transactions.length > 0 && (
+                        <Box sx={{ mb: 2 }}>
+                            <TextField
+                                label="Filter by symbol"
+                                placeholder="Type symbol (e.g. AAPL)"
+                                value={txFilter}
+                                onChange={(e) => setTxFilter(e.target.value)}
+                                fullWidth
+                                size="small"
+                            />
+                        </Box>
+                    )}
+
+                    {transactions.length > 0 && filteredTransactions.length === 0 && (
+                        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+                            <Typography color="text.secondary">No transactions match your filter</Typography>
+                        </Paper>
+                    )}
+
+                    {filteredTransactions.length > 0 && (
                         <TableContainer component={Paper} variant="outlined">
                             <Table size="small">
                                 <TableHead>
@@ -327,7 +360,7 @@ const AccountPage: React.FC = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {[...transactions]
+                                    {[...filteredTransactions]
                                         .sort(
                                             (a, b) =>
                                                 new Date(b.transactionDate).getTime() -
