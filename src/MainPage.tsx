@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Box, Button, Chip } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -11,6 +11,7 @@ import { resetUserInfo } from '@store/userSlice';
 import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus, type Information } from '@models/informationType';
 import { InformationDisplay } from './features/informationDisplay/infoSnackBar';
+import AlertPoller from './features/Alerts/AlertPoller';
 import LogInButton from './components/LogInButton';
 import ThemeToggleButton from './components/ThemeToggleButton';
 import { HeaderActions, HeaderRow, NavButton, PageWrapper } from './MainPage.styles';
@@ -100,6 +101,7 @@ const MainPage: React.FC = () => {
     return (
         <Box sx={PageWrapper}>
             <InformationDisplay />
+            <AlertPoller enabled={isLoggedIn} />
             <Box sx={HeaderRow}>
                 <Button
                     variant="text"
@@ -175,38 +177,33 @@ const MainPage: React.FC = () => {
                             >
                                 Account
                             </Button>
-                            <Chip
-                                label={`$${userBalance.toFixed(2)}`}
-                                color="primary"
-                                variant="outlined"
-                                size="medium"
-                                sx={{ fontWeight: 600 }}
-                                aria-label="Available balance"
-                            />
                         </Box>
                     )}
                     {isLoggedIn && (
-                        <Box sx={{ 
-                            px: 2, 
-                            py: 1, 
-                            backgroundColor: 'action.hover',
-                            borderRadius: 1,
-                            minWidth: 120,
-                            textAlign: 'center'
-                        }}>
-                            <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Balance</Box>
-                            <Box sx={{ fontSize: '1.25rem', fontWeight: 600, color: 'primary.main' }}>
+                        <Box
+                            sx={{
+                                px: 2,
+                                py: 1,
+                                backgroundColor: 'action.hover',
+                                borderRadius: 1,
+                                minWidth: 120,
+                                textAlign: 'center',
+                            }}
+                        >
+                            <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                                Balance
+                            </Box>
+                            <Box
+                                sx={{ fontSize: '1.25rem', fontWeight: 600, color: 'primary.main' }}
+                            >
                                 ${userBalance.toFixed(2)}
                             </Box>
                         </Box>
                     )}
-                    <ThemeToggleButton />
                     <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
                 </Box>
             </Box>
             <Outlet />
-
-            
         </Box>
     );
 };

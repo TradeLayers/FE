@@ -33,8 +33,14 @@ export type PortfolioHistoryPoint = {
     investedCapital: number;
 };
 
+export type PortfolioMarketValuePoint = {
+    date: string;
+    value: number;
+};
+
 export type PortfolioHistoryResponse = {
     points: PortfolioHistoryPoint[];
+    marketValue: PortfolioMarketValuePoint[];
     currentValue: number;
 };
 

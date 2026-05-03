@@ -89,14 +89,14 @@ const WatchlistPanel: React.FC = () => {
         return map;
     }, [data]);
 
-    const handleThresholdInputChange = (symbol: string, value: string) => {
+    const handleThresholdInputChange = (symbol: string, value: string): void => {
         setThresholdInputs((prev) => ({
             ...prev,
             [symbol]: value,
         }));
     };
 
-    const handleThresholdSave = (symbol: string) => {
+    const handleThresholdSave = (symbol: string): void => {
         const rawValue = thresholdInputs[symbol]?.trim() ?? '';
         const parsedValue = Number(rawValue);
 

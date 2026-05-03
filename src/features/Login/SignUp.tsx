@@ -17,7 +17,9 @@ export const SignUp: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const signInWithProvider = async (provider: GoogleAuthProvider | GithubAuthProvider) => {
+    const signInWithProvider = async (
+        provider: GoogleAuthProvider | GithubAuthProvider,
+    ): Promise<void> => {
         try {
             await signInWithPopup(auth, provider);
 
@@ -38,13 +40,13 @@ export const SignUp: React.FC = () => {
         }
     };
 
-    const handleGoogleAuth = async () => {
+    const handleGoogleAuth = async (): Promise<void> => {
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
         signInWithProvider(provider);
     };
 
-    const handleGitHubAuth = async () => {
+    const handleGitHubAuth = async (): Promise<void> => {
         const provider = new GithubAuthProvider();
         provider.addScope('user:email');
         signInWithProvider(provider);
