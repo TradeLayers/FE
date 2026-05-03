@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Typography, TextField, Button, Divider } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { useSearchParams } from 'react-router-dom';
 
 import { authorizedApi } from '@api/axiosConfig';
 import { addToWatchlist, getWatchlist, removeFromWatchlist } from '@api/watchlistApi';
@@ -29,14 +30,22 @@ import {
 const StocksPage: React.FC = () => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [search, setSearch] = useState('');
-    const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+    const [selectedSymbol, setSelectedSymbol] = useState<string | null>(
+        searchParams.get('symbol'),
+    );
     const [buyOpen, setBuyOpen] = useState(false);
 
     const user = useSelector((state: RootState) => state.userSliceName);
     const loggedIn = useSelector((state: RootState) => isUser(state.userSliceName));
     const debouncedSearch = useDebounce(search, 300);
+    const symbolParam = searchParams.get('symbol');
+
+    useEffect(() => {
+        setSelectedSymbol(symbolParam);
+    }, [symbolParam]);
 
     const { data: popularStocks } = useQuery<StockListItem[]>({
         queryKey: ['stocks'],
@@ -127,7 +136,10 @@ const StocksPage: React.FC = () => {
                         <Box
                             key={item.symbol}
                             sx={selectedSymbol === item.symbol ? StockRowSelected : StockRow}
-                            onClick={() => setSelectedSymbol(item.symbol)}
+                            onClick={() => {
+                                setSelectedSymbol(item.symbol);
+                                setSearchParams({ symbol: item.symbol });
+                            }}
                         >
                             <Box>
                                 <Typography variant="body1" fontWeight={600}>
@@ -225,7 +237,9 @@ const StocksPage: React.FC = () => {
                     symbol={profile.symbol}
                     name={profile.name}
                     currentPrice={profile.price}
-                    availableBalance={typeof user.balance === 'string' ? parseFloat(user.balance) : user.balance}
+                    availableBalance={
+                        typeof user.balance === 'string' ? parseFloat(user.balance) : user.balance
+                    }
                 />
             )}
         </Box>

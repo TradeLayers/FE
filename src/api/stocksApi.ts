@@ -1,9 +1,16 @@
 import { authorizedApi } from './axiosConfig';
 import { type CandlesResponse } from '@models/portfolioTypes';
-import { type StockListItem } from '@models/stockTypes';
+import { type StockListItem, type StockQuote } from '@models/stockTypes';
 
 export const getAllStocks = async (): Promise<StockListItem[]> => {
     const response = await authorizedApi.get<StockListItem[]>('/stocks');
+    return response.data;
+};
+
+export const getQuotes = async (symbols: string[]): Promise<StockQuote[]> => {
+    const response = await authorizedApi.post<StockQuote[]>('/stocks/quotes', {
+        symbols,
+    });
     return response.data;
 };
 

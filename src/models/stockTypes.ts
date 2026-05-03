@@ -9,6 +9,15 @@ export type StockListItem = {
     price: number;
 };
 
+export type StockQuote = {
+    symbol: string;
+    price: number;
+    change: number;
+    percentChange: number;
+    volume: number;
+    timestamp: number;
+};
+
 export type StockSearchResult = {
     symbol: string;
     description: string;
