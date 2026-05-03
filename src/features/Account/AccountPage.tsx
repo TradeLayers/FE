@@ -347,9 +347,7 @@ const AccountPage: React.FC = () => {
 
                     {transactions.length > 0 && filteredTransactions.length === 0 && (
                         <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
-                            <Typography color="text.secondary">
-                                No transactions match your filter
-                            </Typography>
+                            <Typography color="text.secondary">No transactions match your filter</Typography>
                         </Paper>
                     )}
 
