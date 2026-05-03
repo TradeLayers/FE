@@ -188,16 +188,22 @@ const MainPage: React.FC = () => {
                         </Box>
                     )}
                     {isLoggedIn && (
-                        <Box sx={{ 
-                            px: 2, 
-                            py: 1, 
-                            backgroundColor: 'action.hover',
-                            borderRadius: 1,
-                            minWidth: 120,
-                            textAlign: 'center'
-                        }}>
-                            <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Balance</Box>
-                            <Box sx={{ fontSize: '1.25rem', fontWeight: 600, color: 'primary.main' }}>
+                        <Box
+                            sx={{
+                                px: 2,
+                                py: 1,
+                                backgroundColor: 'action.hover',
+                                borderRadius: 1,
+                                minWidth: 120,
+                                textAlign: 'center',
+                            }}
+                        >
+                            <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                                Balance
+                            </Box>
+                            <Box
+                                sx={{ fontSize: '1.25rem', fontWeight: 600, color: 'primary.main' }}
+                            >
                                 ${userBalance.toFixed(2)}
                             </Box>
                         </Box>
@@ -207,8 +213,6 @@ const MainPage: React.FC = () => {
                 </Box>
             </Box>
             <Outlet />
-
-            
         </Box>
     );
 };
