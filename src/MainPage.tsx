@@ -11,6 +11,7 @@ import { resetUserInfo } from '@store/userSlice';
 import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus, type Information } from '@models/informationType';
 import { InformationDisplay } from './features/informationDisplay/infoSnackBar';
+import AlertPoller from './features/Alerts/AlertPoller';
 import LogInButton from './components/LogInButton';
 import ThemeToggleButton from './components/ThemeToggleButton';
 import { HeaderActions, HeaderRow, NavButton, PageWrapper } from './MainPage.styles';
@@ -100,6 +101,7 @@ const MainPage: React.FC = () => {
     return (
         <Box sx={PageWrapper}>
             <InformationDisplay />
+            <AlertPoller enabled={isLoggedIn} />
             <Box sx={HeaderRow}>
                 <Button
                     variant="text"
