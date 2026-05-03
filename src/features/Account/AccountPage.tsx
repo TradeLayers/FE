@@ -43,6 +43,7 @@ import WatchlistPanel from './WatchlistPanel';
 import StockStatsCard from './StockStatsCard';
 import TradeDialog from './TradeDialog';
 import { formatCurrency, formatDateTime, formatQuantity } from './format';
+import HoldingLogo from '../../components/HoldingLogo';
 
 type TabValue = 'account' | 'holdings' | 'transactions' | 'watchlist';
 
@@ -215,6 +216,7 @@ const AccountPage: React.FC = () => {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell width={48} />
+                                        <TableCell width={40} />
                                         <TableCell>Symbol</TableCell>
                                         <TableCell>Company</TableCell>
                                         <TableCell align="right">Quantity</TableCell>
@@ -244,6 +246,9 @@ const AccountPage: React.FC = () => {
                                                                 <KeyboardArrowDownIcon fontSize="small" />
                                                             )}
                                                         </IconButton>
+                                                    </TableCell>
+                                                    <TableCell width={40}>
+                                                        <HoldingLogo symbol={holding.symbol} />
                                                     </TableCell>
                                                     <TableCell>{holding.symbol}</TableCell>
                                                     <TableCell>{holding.name}</TableCell>

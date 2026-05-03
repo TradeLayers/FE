@@ -1,32 +1,20 @@
-import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
-import { Button, type SxProps, type Theme } from '@mui/material';
+import { IconButton } from '@mui/material';
 
 import { useThemeMode } from '@styles/ThemeModeContext';
 
-const ThemeToggleButtonSx: SxProps<Theme> = {
-    minWidth: 136,
-    whiteSpace: 'nowrap',
-    backgroundColor: 'background.paper',
-};
-
 const ThemeToggleButton: React.FC = () => {
-    const { mode, toggleMode } = useThemeMode();
-    const nextMode = mode === 'dark' ? 'light' : 'dark';
-    const ModeIcon = nextMode === 'light' ? LightModeOutlinedIcon : DarkModeOutlinedIcon;
+    const { toggleMode } = useThemeMode();
 
     return (
-        <Button
-            variant="outlined"
-            size="large"
-            sx={ThemeToggleButtonSx}
-            startIcon={<ModeIcon fontSize="small" />}
-            aria-label={`Switch to ${nextMode} mode`}
-            aria-pressed={mode === 'light'}
+        <IconButton
             onClick={toggleMode}
+            aria-label="Toggle theme"
+            size="small"
+            sx={{ ml: 1 }}
         >
-            {nextMode === 'light' ? 'Light Mode' : 'Dark Mode'}
-        </Button>
+            <LightModeOutlinedIcon fontSize="small" />
+        </IconButton>
     );
 };
 
