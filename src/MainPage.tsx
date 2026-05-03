@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Chip } from '@mui/material';
 import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -23,6 +23,12 @@ const MainPage: React.FC = () => {
     const location = useLocation();
     const dispatch = useDispatch();
     const isLoggedIn = useSelector((state: RootState) => !isGuest(state.userSliceName));
+    const userBalance = useSelector((state: RootState) => {
+        const balance = state.userSliceName.balance;
+        if (typeof balance === 'number') return balance;
+        if (typeof balance === 'string') return parseFloat(balance);
+        return 0;
+    });
 
     const handleAuthButtonClick = async (): Promise<void> => {
         if (!isLoggedIn) {
@@ -114,6 +120,8 @@ const MainPage: React.FC = () => {
                 >
                     Stock Tracker
                 </Button>
+                {/* Light mode (sun) next to title */}
+                <ThemeToggleButton />
                 <Box sx={HeaderActions}>
                     <Button
                         variant={isActivePath('/about') ? 'contained' : 'outlined'}
@@ -158,20 +166,31 @@ const MainPage: React.FC = () => {
                         </Button>
                     )}
                     {isLoggedIn && (
-                        <Button
-                            variant={isActivePath('/account') ? 'contained' : 'outlined'}
-                            size="large"
-                            sx={NavButton}
-                            onClick={() => handleNavigate('/account')}
-                        >
-                            Account
-                        </Button>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Button
+                                variant={isActivePath('/account') ? 'contained' : 'outlined'}
+                                size="large"
+                                sx={NavButton}
+                                onClick={() => handleNavigate('/account')}
+                            >
+                                Account
+                            </Button>
+                            <Chip
+                                label={`$${userBalance.toFixed(2)}`}
+                                color="primary"
+                                variant="outlined"
+                                size="medium"
+                                sx={{ fontWeight: 600 }}
+                                aria-label="Available balance"
+                            />
+                        </Box>
                     )}
-                    <ThemeToggleButton />
                     <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
                 </Box>
             </Box>
             <Outlet />
+
+            
         </Box>
     );
 };
