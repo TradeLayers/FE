@@ -54,7 +54,7 @@ const StockPriceChart: React.FC<Props> = ({ symbol }) => {
     }, [data, range, symbol]);
 
     return (
-        <Box sx={{ mt: 3 }}>
+        <Box sx={{ mt: 3, width: '100%', maxWidth: 1100, alignSelf: 'center' }}>
             <Stack
                 direction={{ xs: 'column', sm: 'row' }}
                 justifyContent="space-between"
@@ -86,7 +86,7 @@ const StockPriceChart: React.FC<Props> = ({ symbol }) => {
             )}
 
             {chartData.length > 0 && (
-                <Box sx={{ width: '100%', height: 280 }}>
+                <Box sx={{ width: '100%', height: { xs: 320, md: 380 } }}>
                     <ResponsiveContainer>
                         <LineChart data={chartData}>
                             <CartesianGrid stroke={theme.palette.divider} strokeDasharray="3 3" />

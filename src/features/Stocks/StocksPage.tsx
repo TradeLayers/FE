@@ -27,6 +27,7 @@ import {
     ProfileHeader,
     ProfileDetails,
     DetailRow,
+    TradeActions,
 } from './StocksPage.styles';
 
 const StocksPage: React.FC = () => {
@@ -185,7 +186,11 @@ const StocksPage: React.FC = () => {
                             </Button>
                         </Box>
                         {profile.price > 0 && (
-                            <Typography variant="h4" color="success.main" sx={{ mb: 3 }}>
+                            <Typography
+                                variant="h4"
+                                color="success.main"
+                                sx={{ mb: 3, textAlign: 'center' }}
+                            >
                                 ${profile.price.toFixed(2)}
                             </Typography>
                         )}
@@ -207,22 +212,24 @@ const StocksPage: React.FC = () => {
                                 <Typography>${(profile.marketCap / 1000).toFixed(1)}B</Typography>
                             </Box>
                         </Box>
-                        <Button
-                            variant="contained"
-                            sx={{ mt: 4, px: 6, py: 1.5 }}
-                            disabled={profile.price <= 0}
-                            onClick={() => setBuyOpen(true)}
-                        >
-                            Buy
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            startIcon={<AddAlertIcon />}
-                            sx={{ mt: 4, ml: 2, px: 4, py: 1.5 }}
-                            onClick={() => setAlertOpen(true)}
-                        >
-                            Create Alert
-                        </Button>
+                        <Box sx={TradeActions}>
+                            <Button
+                                variant="contained"
+                                sx={{ px: 6, py: 1.5 }}
+                                disabled={profile.price <= 0}
+                                onClick={() => setBuyOpen(true)}
+                            >
+                                Buy
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                startIcon={<AddAlertIcon />}
+                                sx={{ px: 4, py: 1.5 }}
+                                onClick={() => setAlertOpen(true)}
+                            >
+                                Create Alert
+                            </Button>
+                        </Box>
                         <StockPriceChart symbol={profile.symbol} />
                     </>
                 ) : (
