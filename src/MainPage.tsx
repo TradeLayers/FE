@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Chip } from '@mui/material';
 import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -177,6 +177,14 @@ const MainPage: React.FC = () => {
                             >
                                 Account
                             </Button>
+                            <Chip
+                                label={`$${userBalance.toFixed(2)}`}
+                                color="primary"
+                                variant="outlined"
+                                size="medium"
+                                sx={{ fontWeight: 600 }}
+                                aria-label="Available balance"
+                            />
                         </Box>
                     )}
                     {isLoggedIn && (
@@ -204,6 +212,8 @@ const MainPage: React.FC = () => {
                 </Box>
             </Box>
             <Outlet />
+
+            
         </Box>
     );
 };

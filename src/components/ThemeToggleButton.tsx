@@ -7,7 +7,12 @@ const ThemeToggleButton: React.FC = () => {
     const { toggleMode } = useThemeMode();
 
     return (
-        <IconButton onClick={toggleMode} aria-label="Toggle theme" size="small" sx={{ ml: 1 }}>
+        <IconButton
+            onClick={toggleMode}
+            aria-label="Toggle theme"
+            size="small"
+            sx={{ ml: 1 }}
+        >
             <LightModeOutlinedIcon fontSize="small" />
         </IconButton>
     );
