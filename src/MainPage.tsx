@@ -212,8 +212,6 @@ const MainPage: React.FC = () => {
                 </Box>
             </Box>
             <Outlet />
-
-            
         </Box>
     );
 };

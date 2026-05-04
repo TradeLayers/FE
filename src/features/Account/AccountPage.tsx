@@ -200,8 +200,7 @@ const AccountPage: React.FC = () => {
     const lastTransactionLabel = useMemo(() => {
         if (transactions.length === 0) return null;
         const latest = [...transactions].sort(
-            (a, b) =>
-                new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime(),
+            (a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime(),
         )[0];
         return `${latest.transactionType.toUpperCase()} ${latest.symbol}`;
     }, [transactions]);
@@ -237,8 +236,7 @@ const AccountPage: React.FC = () => {
     const summaryCards: Array<{ label: string; value: string; helper?: string }> = [
         {
             label: 'Available Balance',
-            value:
-                user.balance !== undefined ? formatCurrency(Number(user.balance)) : '—',
+            value: user.balance !== undefined ? formatCurrency(Number(user.balance)) : '—',
         },
         {
             label: 'Holdings Value',
@@ -253,10 +251,7 @@ const AccountPage: React.FC = () => {
         {
             label: 'Active Alerts',
             value: String(activeAlerts),
-            helper:
-                alertItems.length > 0
-                    ? `${alertItems.length} total`
-                    : 'none configured',
+            helper: alertItems.length > 0 ? `${alertItems.length} total` : 'none configured',
         },
         {
             label: 'Last Activity',

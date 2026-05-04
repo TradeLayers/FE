@@ -39,7 +39,13 @@ const formatChange = (value: number): string => {
     return `${sign}${value.toFixed(2)}%`;
 };
 
-function MoversPanel({ title, rows, loading, emptyMessage, onRowClick }: MoversPanelProps): React.JSX.Element {
+function MoversPanel({
+    title,
+    rows,
+    loading,
+    emptyMessage,
+    onRowClick,
+}: MoversPanelProps): React.JSX.Element {
     return (
         <Paper variant="outlined" sx={Panel}>
             <Typography variant="h6" sx={PanelTitle}>
@@ -124,12 +130,20 @@ const HomePage: React.FC = () => {
     }, [stocks, quotes]);
 
     const gainers = useMemo(
-        () => movers.filter((row) => row.percentChange > 0).sort((a, b) => b.percentChange - a.percentChange).slice(0, 5),
+        () =>
+            movers
+                .filter((row) => row.percentChange > 0)
+                .sort((a, b) => b.percentChange - a.percentChange)
+                .slice(0, 5),
         [movers],
     );
 
     const losers = useMemo(
-        () => movers.filter((row) => row.percentChange < 0).sort((a, b) => a.percentChange - b.percentChange).slice(0, 5),
+        () =>
+            movers
+                .filter((row) => row.percentChange < 0)
+                .sort((a, b) => a.percentChange - b.percentChange)
+                .slice(0, 5),
         [movers],
     );
 
@@ -141,10 +155,10 @@ const HomePage: React.FC = () => {
         <Box>
             <Box sx={Hero}>
                 <Typography variant="h5" component="h2" gutterBottom>
-                Welcome to TradeLayers
+                    Welcome to TradeLayers
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                Track market movements and stay connected to your portfolio in one place.
+                    Track market movements and stay connected to your portfolio in one place.
                 </Typography>
             </Box>
 

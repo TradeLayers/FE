@@ -94,6 +94,43 @@ http://localhost:5173
 | `npm run lint`    | Runs ESLint and checks formatting.                            |
 | `npm run preview` | Previews the production build locally.                        |
 | `npm run format`  | Formats the entire project using Prettier.                    |
+| `npm run test:e2e` | Runs Playwright end-to-end tests against the dev server.    |
+| `npm run test:e2e:headed` | Runs E2E tests in a headed browser.                  |
+| `npm run test:e2e:debug` | Runs E2E tests with the Playwright Inspector.         |
+| `npm run test:e2e:report` | Opens the most recent HTML report.                    |
+
+---
+
+# 🧪 End-to-End Tests (Playwright)
+
+E2E tests live in `e2e/` and are executed with Playwright.
+
+## Local setup
+
+```bash
+npm install
+npx playwright install --with-deps chromium
+```
+
+Provide a seeded test account via env vars (or rely on the defaults):
+
+```env
+PLAYWRIGHT_TEST_EMAIL=e2e-user@tradelayers.test
+PLAYWRIGHT_TEST_PASSWORD=Password!23
+PLAYWRIGHT_BASE_URL=http://localhost:5173
+```
+
+## Run
+
+```bash
+npm run test:e2e            # headless against the auto-started dev server
+npm run test:e2e:headed     # watch the browser
+npm run test:e2e:debug      # step through with the Inspector
+npm run test:e2e:report     # open the last HTML report
+```
+
+The HTML report is generated in `playwright-report/` and uploaded as a CI
+artifact on every pull request via `.github/workflows/e2e.yml`.
 
 ---
 

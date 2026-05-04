@@ -50,9 +50,7 @@ const StocksPage: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [search, setSearch] = useState('');
-    const [selectedSymbol, setSelectedSymbol] = useState<string | null>(
-        searchParams.get('symbol'),
-    );
+    const [selectedSymbol, setSelectedSymbol] = useState<string | null>(searchParams.get('symbol'));
     const [buyOpen, setBuyOpen] = useState(false);
     const [sellOpen, setSellOpen] = useState(false);
     const [alertOpen, setAlertOpen] = useState(false);
@@ -159,6 +157,7 @@ const StocksPage: React.FC = () => {
                         placeholder="Search stocks..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        inputProps={{ 'data-testid': 'stocks-search' }}
                     />
                 </Box>
                 <Divider />
@@ -166,6 +165,7 @@ const StocksPage: React.FC = () => {
                     {listItems.map((item) => (
                         <Box
                             key={item.symbol}
+                            data-testid={`stock-row-${item.symbol}`}
                             sx={selectedSymbol === item.symbol ? StockRowSelected : StockRow}
                             onClick={() => {
                                 setSelectedSymbol(item.symbol);
@@ -211,7 +211,11 @@ const StocksPage: React.FC = () => {
                                     <Typography variant="h5" fontWeight={700} noWrap>
                                         {profile.name}
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        data-testid="stock-detail-symbol"
+                                    >
                                         {profile.symbol} · {profile.exchange}
                                     </Typography>
                                 </Box>
@@ -231,6 +235,7 @@ const StocksPage: React.FC = () => {
                                     variant="contained"
                                     disabled={profile.price <= 0}
                                     onClick={() => setBuyOpen(true)}
+                                    data-testid="stock-detail-buy"
                                 >
                                     Buy
                                 </Button>
@@ -240,6 +245,7 @@ const StocksPage: React.FC = () => {
                                         color="error"
                                         disabled={profile.price <= 0}
                                         onClick={() => setSellOpen(true)}
+                                        data-testid="stock-detail-sell"
                                     >
                                         Sell
                                     </Button>
@@ -249,6 +255,7 @@ const StocksPage: React.FC = () => {
                                     startIcon={isWatched ? <StarIcon /> : <StarBorderIcon />}
                                     onClick={() => watchMutation.mutate()}
                                     disabled={watchMutation.isPending}
+                                    data-testid="stock-detail-watch"
                                 >
                                     {isWatched ? 'Watching' : 'Watch'}
                                 </Button>
@@ -256,6 +263,7 @@ const StocksPage: React.FC = () => {
                                     variant="outlined"
                                     startIcon={<AddAlertIcon />}
                                     onClick={() => setAlertOpen(true)}
+                                    data-testid="stock-detail-alert"
                                 >
                                     Alert
                                 </Button>
@@ -314,7 +322,9 @@ const StocksPage: React.FC = () => {
                             </Box>
                         </Box>
 
-                        <StockPriceChart symbol={profile.symbol} />
+                        <Box data-testid="stock-price-chart">
+                            <StockPriceChart symbol={profile.symbol} />
+                        </Box>
                     </>
                 ) : (
                     <Typography color="text.secondary">Select a stock to view details</Typography>
