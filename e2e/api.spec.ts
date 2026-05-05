@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-const MOCK_BASE = process.env.MOCK_API_BASE_URL ?? 'http://localhost:5174';
-const SEED_EMAIL = process.env.PLAYWRIGHT_TEST_EMAIL ?? 'e2e-user@tradelayers.test';
-const SEED_PASSWORD = process.env.PLAYWRIGHT_TEST_PASSWORD ?? 'Password!23';
-const EMULATOR_HOST = 'http://127.0.0.1:9099';
+import { EMULATOR_HOST, MOCK_BASE, SEED_EMAIL, SEED_PASSWORD } from './constants';
 
 const getEmulatorIdToken = async (): Promise<string> => {
     const r = await fetch(
@@ -24,6 +20,8 @@ const getEmulatorIdToken = async (): Promise<string> => {
 
 test.describe('Backend API contract', () => {
     test.beforeEach(async ({ request }) => {
+        // The api project tests don't go through the mockApi fixture (no browser),
+        // so we reset state explicitly here to keep each test independent.
         await request.post(`${MOCK_BASE}/__admin/reset`, { data: {} });
     });
 

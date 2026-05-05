@@ -18,22 +18,22 @@ import {
 } from '@mui/material';
 
 import { auth } from '@configs/firebase';
-import { addInfo } from '@store/informationSplice';
-import { addUserInfo } from '@store/userSlice';
-import { createOrFetchUser } from '@api/userApi';
-import { InfoMessageStatus } from '@models/informationType';
+import { finalizeLogin, mapFirebaseAuthError } from './authHelpers';
 
 type Mode = 'login' | 'register' | 'forgot';
 
-const friendly = (code: string): string => {
-    if (code.includes('invalid-email')) return 'Invalid email address';
-    if (code.includes('weak-password')) return 'Password is too weak (min 6 characters)';
-    if (code.includes('email-already-in-use')) return 'Email already in use';
-    if (code.includes('wrong-password') || code.includes('invalid-credential'))
-        return 'Wrong email or password';
-    if (code.includes('user-not-found')) return 'No account with that email';
-    if (code.includes('missing-password')) return 'Password is required';
-    return code.replace('auth/', '').replace(/-/g, ' ');
+const COPY: Record<Mode, { title: string; submitLabel: string; submitTestId: string }> = {
+    login: { title: 'Log in', submitLabel: 'Log in', submitTestId: 'login-submit' },
+    register: {
+        title: 'Create account',
+        submitLabel: 'Create account',
+        submitTestId: 'register-submit',
+    },
+    forgot: {
+        title: 'Reset password',
+        submitLabel: 'Send reset email',
+        submitTestId: 'reset-submit',
+    },
 };
 
 export const EmailPasswordForm: React.FC = () => {
@@ -60,47 +60,31 @@ export const EmailPasswordForm: React.FC = () => {
         try {
             if (mode === 'login') {
                 await signInWithEmailAndPassword(auth, email, password);
+                await finalizeLogin(dispatch, navigate);
             } else if (mode === 'register') {
                 await createUserWithEmailAndPassword(auth, email, password);
+                await finalizeLogin(dispatch, navigate);
             } else {
                 await sendPasswordResetEmail(auth, email);
                 setSuccess('Password reset email sent');
-                setBusy(false);
-                return;
             }
-
-            try {
-                const dbUser = await createOrFetchUser();
-                dispatch(addUserInfo(dbUser));
-            } catch {
-                /* swallow; AuthListener will retry */
-            }
-            dispatch(
-                addInfo({
-                    infoMessage: 'Successfully logged in',
-                    status: InfoMessageStatus.Success,
-                }),
-            );
-            navigate('/');
         } catch (e: unknown) {
             const code =
                 e instanceof Error && 'code' in e
                     ? String((e as { code: string }).code)
                     : String(e);
-            setError(friendly(code));
+            setError(mapFirebaseAuthError(code));
         } finally {
             setBusy(false);
         }
     };
 
+    const copy = COPY[mode];
+
     return (
         <Box data-testid="email-password-form" sx={{ width: '100%', mt: 2 }}>
             <Typography variant="h6" data-testid="auth-mode-title" sx={{ mb: 1 }}>
-                {mode === 'login'
-                    ? 'Log in'
-                    : mode === 'register'
-                      ? 'Create account'
-                      : 'Reset password'}
+                {copy.title}
             </Typography>
             <Stack spacing={2}>
                 <TextField
@@ -147,24 +131,10 @@ export const EmailPasswordForm: React.FC = () => {
                     variant="contained"
                     onClick={submit}
                     disabled={busy}
-                    data-testid={
-                        mode === 'login'
-                            ? 'login-submit'
-                            : mode === 'register'
-                              ? 'register-submit'
-                              : 'reset-submit'
-                    }
+                    data-testid={copy.submitTestId}
                     fullWidth
                 >
-                    {busy ? (
-                        <CircularProgress size={20} />
-                    ) : mode === 'login' ? (
-                        'Log in'
-                    ) : mode === 'register' ? (
-                        'Create account'
-                    ) : (
-                        'Send reset email'
-                    )}
+                    {busy ? <CircularProgress size={20} /> : copy.submitLabel}
                 </Button>
                 <Stack direction="row" justifyContent="space-between">
                     {mode === 'login' && (

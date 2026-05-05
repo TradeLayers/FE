@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 
-test('401 from API does not crash the app', async ({ page, authedPage, mockApi }) => {
+test('401 from API does not crash the app', async ({ page, authedPage }) => {
     await authedPage;
     await page.getByTestId('nav-account').click();
     // Simulate session expiry: drop auth on next requests by clearing storage and reloading.
@@ -9,7 +9,6 @@ test('401 from API does not crash the app', async ({ page, authedPage, mockApi }
             .filter((k) => k.startsWith('firebase'))
             .forEach((k) => window.localStorage.removeItem(k));
     });
-    await mockApi.reset(); // clean state before reload
     await page.reload();
     // After unauth state, app should either render guest UI or redirect to login.
     await expect(page.locator('body')).toBeVisible();

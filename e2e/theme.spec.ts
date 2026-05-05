@@ -1,34 +1,29 @@
 import { test, expect } from './fixtures';
+import { THEME_STORAGE_KEY } from './constants';
+
+const readMode = (page: import('@playwright/test').Page): Promise<string | null> =>
+    page.evaluate((key) => window.localStorage.getItem(key), THEME_STORAGE_KEY);
 
 test.describe('Theme persistence', () => {
     test('toggling theme persists across reloads', async ({ page }) => {
         await page.goto('/');
-        const initial = await page.evaluate(() =>
-            window.localStorage.getItem('tradeLayersThemeMode'),
-        );
+        const initial = await readMode(page);
         await page.getByTestId('theme-toggle').click();
         await page.waitForFunction(
-            (prev) => window.localStorage.getItem('tradeLayersThemeMode') !== prev,
-            initial,
+            ({ key, prev }) => window.localStorage.getItem(key) !== prev,
+            { key: THEME_STORAGE_KEY, prev: initial },
         );
-        const after = await page.evaluate(() =>
-            window.localStorage.getItem('tradeLayersThemeMode'),
-        );
+        const after = await readMode(page);
         expect(after).not.toEqual(initial);
 
         await page.reload();
-        const reloaded = await page.evaluate(() =>
-            window.localStorage.getItem('tradeLayersThemeMode'),
-        );
-        expect(reloaded).toEqual(after);
+        expect(await readMode(page)).toEqual(after);
     });
 
     test('theme defaults to dark on first visit', async ({ page }) => {
         await page.goto('/');
-        await page.evaluate(() => window.localStorage.removeItem('tradeLayersThemeMode'));
+        await page.evaluate((key) => window.localStorage.removeItem(key), THEME_STORAGE_KEY);
         await page.reload();
-        const mode = await page.evaluate(() => window.localStorage.getItem('tradeLayersThemeMode'));
-        // First visit writes 'dark' on mount via effect
-        expect(mode).toEqual('dark');
+        expect(await readMode(page)).toEqual('dark');
     });
 });

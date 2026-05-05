@@ -211,9 +211,7 @@ const MainPage: React.FC = () => {
                             </Box>
                         </Box>
                     )}
-                    <Box data-testid={isLoggedIn ? 'logout-button' : 'login-link'}>
-                        <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
-                    </Box>
+                    <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
                 </Box>
             </Box>
             <Outlet />

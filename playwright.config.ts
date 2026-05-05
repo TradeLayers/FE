@@ -12,6 +12,8 @@ export default defineConfig({
     testDir: './e2e',
     timeout: 30_000,
     expect: { timeout: 5_000, toHaveScreenshot: { maxDiffPixelRatio: 0.02 } },
+    // Serial because the in-process mock server (e2e/mock-server.ts) holds
+    // module-level state shared across tests.
     fullyParallel: false,
     workers: 1,
     forbidOnly: !!process.env.CI,

@@ -268,17 +268,15 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         const resolution = url.searchParams.get('resolution') ?? 'D';
         const stock = state.stocks.find((s) => s.symbol === symbol);
         const base = stock?.price ?? 100;
-        const points =
-            resolution === '60' ? 24 : resolution === 'D' ? 30 : resolution === 'W' ? 52 : 60;
+        const POINTS_BY_RES: Record<string, number> = { '60': 24, D: 30, W: 52 };
+        const STEP_BY_RES: Record<string, number> = {
+            '60': 3600,
+            D: 86400,
+            W: 604800,
+        };
+        const points = POINTS_BY_RES[resolution] ?? 60;
+        const step = STEP_BY_RES[resolution] ?? 2592000;
         const now = Math.floor(Date.now() / 1000);
-        const step =
-            resolution === '60'
-                ? 3600
-                : resolution === 'D'
-                  ? 86400
-                  : resolution === 'W'
-                    ? 604800
-                    : 2592000;
         const c = Array.from({ length: points }, (_, i) => base + Math.sin(i / 3) * 5 + i * 0.1);
         const t = Array.from({ length: points }, (_, i) => now - (points - i) * step);
         return json(res, 200, { c, t, h: c, l: c, o: c, s: 'ok', v: c.map(() => 1000) });
@@ -334,8 +332,8 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
 
     if (path === '/portfolio/history' && method === 'GET') {
         const interval = url.searchParams.get('interval') ?? '1M';
-        const points =
-            interval === '1D' ? 24 : interval === '1W' ? 7 : interval === '1M' ? 30 : 365;
+        const POINTS_BY_INTERVAL: Record<string, number> = { '1D': 24, '1W': 7, '1M': 30 };
+        const points = POINTS_BY_INTERVAL[interval] ?? 365;
         const now = Date.now();
         const data = Array.from({ length: points }, (_, i) => ({
             timestamp: new Date(now - (points - i) * 86400000).toISOString(),

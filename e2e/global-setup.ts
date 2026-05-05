@@ -1,22 +1,22 @@
 import { startMockServer } from './mock-server';
-
-const EMULATOR_HOST = 'http://127.0.0.1:9099';
-const EMULATOR_PROJECT = 'app-local-8bfd8';
-const SEED_EMAIL = process.env.PLAYWRIGHT_TEST_EMAIL ?? 'e2e-user@tradelayers.test';
-const SEED_PASSWORD = process.env.PLAYWRIGHT_TEST_PASSWORD ?? 'Password!23';
+import { EMULATOR_HOST, EMULATOR_PROJECT, MOCK_API_PORT, SEED_EMAIL, SEED_PASSWORD } from './constants';
 
 const waitFor = async (url: string, timeoutMs = 30_000): Promise<void> => {
     const start = Date.now();
+    let lastError: unknown;
+    let delay = 250;
     while (Date.now() - start < timeoutMs) {
         try {
             const r = await fetch(url);
             if (r.ok) return;
-        } catch {
-            /* retry */
+            lastError = new Error(`HTTP ${r.status}`);
+        } catch (e) {
+            lastError = e;
         }
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, delay));
+        delay = Math.min(delay * 2, 2000);
     }
-    throw new Error(`Timed out waiting for ${url}`);
+    throw new Error(`Timed out waiting for ${url}: ${String(lastError)}`);
 };
 
 const seedEmulatorUser = async (): Promise<void> => {
@@ -40,8 +40,7 @@ async function globalSetup(): Promise<() => Promise<void>> {
     await waitFor(`${EMULATOR_HOST}/emulator/v1/projects/${EMULATOR_PROJECT}/config`);
     await seedEmulatorUser();
 
-    const port = parseInt(process.env.MOCK_API_PORT ?? '5174', 10);
-    const server = await startMockServer(port);
+    const server = await startMockServer(MOCK_API_PORT);
     return async (): Promise<void> => {
         await new Promise<void>((resolve) => server.close(() => resolve()));
     };

@@ -2,16 +2,15 @@ import { signInWithPopup, GoogleAuthProvider, GithubAuthProvider } from 'firebas
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { auth } from '@configs/firebase';
-import { InfoMessageStatus, type Information } from '@models/informationType';
+import { InfoMessageStatus } from '@models/informationType';
 import { addInfo } from '@store/informationSplice';
-import { addUserInfo } from '@store/userSlice';
-import { createOrFetchUser } from '@api/userApi';
 
 import { Box, Typography, Button, Divider } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
 
 import { Title, Description, AdditionalInfo, AuthOptions } from './SignUp.styles';
+import { finalizeLogin, mapFirebaseAuthError } from './authHelpers';
 
 export const SignUp: React.FC = () => {
     const navigate = useNavigate();
@@ -22,21 +21,18 @@ export const SignUp: React.FC = () => {
     ): Promise<void> => {
         try {
             await signInWithPopup(auth, provider);
-
-            const usersData = await createOrFetchUser();
-            dispatch(addUserInfo(usersData));
-
-            const infoMess: Information = {
-                infoMessage: 'Successfully logged in',
-                status: InfoMessageStatus.Success,
-            };
-
-            dispatch(addInfo(infoMess));
-            navigate('/');
+            await finalizeLogin(dispatch, navigate);
         } catch (err: unknown) {
-            if (import.meta.env.DEV) {
-                console.error(err);
-            }
+            const code =
+                err instanceof Error && 'code' in err
+                    ? String((err as { code: string }).code)
+                    : String(err);
+            dispatch(
+                addInfo({
+                    infoMessage: mapFirebaseAuthError(code),
+                    status: InfoMessageStatus.Error,
+                }),
+            );
         }
     };
 

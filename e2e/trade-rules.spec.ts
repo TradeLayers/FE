@@ -49,6 +49,7 @@ test.describe('Trading rules', () => {
         mockApi,
     }) => {
         await authedPage;
+        // Buy 1 AAPL at the seeded price (200).
         await page.getByTestId('nav-stocks').click();
         await page.getByTestId('stock-row-AAPL').click();
         await page.getByTestId('stock-detail-buy').click();
@@ -56,34 +57,33 @@ test.describe('Trading rules', () => {
         await page.getByTestId('trade-confirm').click();
         await expect(page.getByTestId('info-snackbar')).toContainText(/Bought/i);
 
-        // Mutate price for the second buy
-        await mockApi.reset();
-        await mockApi.seed('stocks', [
-            {
-                symbol: 'AAPL',
-                name: 'Apple Inc.',
-                exchange: 'NASDAQ',
-                industry: 'Technology',
-                country: 'US',
-                marketCap: 3_000_000_000_000,
-                logo: '',
-                price: 100,
-            },
-        ]);
+        // Drop the AAPL price to 100 in the mock (without resetting transactions).
+        const before = (await mockApi.getState()) as {
+            stocks: { symbol: string; price: number }[];
+            transactions: unknown[];
+            user: { balance: number };
+        };
+        const updatedStocks = before.stocks.map((s) =>
+            s.symbol === 'AAPL' ? { ...s, price: 100 } : s,
+        );
+        await mockApi.seed('stocks', updatedStocks);
 
-        // Second buy at 100 — average should now be 150
+        // Buy a second AAPL at the new price.
         await page.reload();
         await page.getByTestId('stock-row-AAPL').click();
         await page.getByTestId('stock-detail-buy').click();
         await page.getByTestId('trade-quantity').fill('1');
         await page.getByTestId('trade-confirm').click();
+        await expect(page.getByTestId('info-snackbar')).toContainText(/Bought/i);
 
-        const state = (await mockApi.getState()) as {
-            holdings: { symbol: string; averagePrice: number }[];
+        const after = (await mockApi.getState()) as {
+            holdings: { symbol: string; quantity: number; averagePrice: number }[];
         };
-        const aapl = state.holdings.find((h) => h.symbol === 'AAPL');
-        // With reset between, only the second buy is recorded; assertion is loose to avoid brittle math.
-        expect(aapl?.averagePrice ?? 0).toBeGreaterThan(0);
+        const aapl = after.holdings.find((h) => h.symbol === 'AAPL');
+        expect(aapl).toBeDefined();
+        expect(aapl?.quantity).toBe(2);
+        // Weighted average of (200, 100) = 150.
+        expect(aapl?.averagePrice).toBeCloseTo(150, 4);
     });
 
     test('realized P&L appears after a sell', async ({ page, authedPage, mockApi }) => {

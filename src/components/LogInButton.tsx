@@ -9,7 +9,13 @@ type LogInButtonProps = {
 
 const LogInButton: React.FC<LogInButtonProps> = ({ isLoggedIn, onClick }) => {
     return (
-        <Button variant="outlined" size="large" sx={AuthButton} onClick={onClick}>
+        <Button
+            variant="outlined"
+            size="large"
+            sx={AuthButton}
+            onClick={onClick}
+            data-testid={isLoggedIn ? 'logout-button' : 'login-link'}
+        >
             {isLoggedIn ? 'Log Out' : 'Log In'}
         </Button>
     );

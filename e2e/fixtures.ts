@@ -1,4 +1,5 @@
 import { test as base, expect, type APIRequestContext } from '@playwright/test';
+import { MOCK_BASE, SEED_EMAIL, SEED_PASSWORD } from './constants';
 
 type AuthFixture = { email: string; password: string };
 
@@ -19,11 +20,6 @@ type Fixtures = {
     authedPage: void;
 };
 
-const defaultEmail = process.env.PLAYWRIGHT_TEST_EMAIL ?? 'e2e-user@tradelayers.test';
-const defaultPassword = process.env.PLAYWRIGHT_TEST_PASSWORD ?? 'Password!23';
-
-const MOCK_BASE = process.env.MOCK_API_BASE_URL ?? 'http://localhost:5174';
-
 const adminPost = async (
     request: APIRequestContext,
     path: string,
@@ -34,7 +30,7 @@ const adminPost = async (
 
 export const test = base.extend<Fixtures>({
     auth: async ({}, use) => {
-        await use({ email: defaultEmail, password: defaultPassword });
+        await use({ email: SEED_EMAIL, password: SEED_PASSWORD });
     },
     mockApi: async ({ request }, use) => {
         const api: MockApi = {
