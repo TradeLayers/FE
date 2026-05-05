@@ -3,9 +3,7 @@ import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 export const expectNoSeriousA11yViolations = async (page: Page, label: string): Promise<void> => {
-    const results = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa'])
-        .analyze();
+    const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     const blockers = results.violations.filter(
         (v) => v.impact === 'serious' || v.impact === 'critical',
     );

@@ -78,7 +78,9 @@ test.describe('Trading rules', () => {
         await page.getByTestId('trade-quantity').fill('1');
         await page.getByTestId('trade-confirm').click();
 
-        const state = (await mockApi.getState()) as { holdings: { symbol: string; averagePrice: number }[] };
+        const state = (await mockApi.getState()) as {
+            holdings: { symbol: string; averagePrice: number }[];
+        };
         const aapl = state.holdings.find((h) => h.symbol === 'AAPL');
         // With reset between, only the second buy is recorded; assertion is loose to avoid brittle math.
         expect(aapl?.averagePrice ?? 0).toBeGreaterThan(0);
@@ -98,7 +100,9 @@ test.describe('Trading rules', () => {
         await page.getByTestId('trade-quantity').fill('1');
         await page.getByTestId('trade-confirm').click();
 
-        const state = (await mockApi.getState()) as { holdings: { symbol: string; realizedPnl: number }[] };
+        const state = (await mockApi.getState()) as {
+            holdings: { symbol: string; realizedPnl: number }[];
+        };
         const aapl = state.holdings.find((h) => h.symbol === 'AAPL');
         expect(aapl).toBeDefined();
         // realizedPnl is a number (0 if same-price round-trip)

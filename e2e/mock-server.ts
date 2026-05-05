@@ -124,7 +124,12 @@ const json = (res: ServerResponse, status: number, body: unknown): void => {
     res.end(JSON.stringify(body));
 };
 
-const text = (res: ServerResponse, status: number, body: string, contentType = 'text/plain'): void => {
+const text = (
+    res: ServerResponse,
+    status: number,
+    body: string,
+    contentType = 'text/plain',
+): void => {
     res.statusCode = status;
     res.setHeader('Content-Type', contentType);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -234,6 +239,21 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         return json(res, 200, state.stocks);
     }
 
+    if (path.startsWith('/stocks/profile/') && method === 'GET') {
+        const symbol = path.split('/').pop() ?? '';
+        const stock = state.stocks.find((s) => s.symbol === symbol);
+        if (!stock) return json(res, 404, { error: 'not found' });
+        return json(res, 200, stock);
+    }
+
+    if (path === '/stocks/search' && method === 'GET') {
+        const q = (url.searchParams.get('q') ?? '').toUpperCase();
+        const matches = state.stocks
+            .filter((s) => s.symbol.includes(q) || s.name.toUpperCase().includes(q))
+            .map((s) => ({ symbol: s.symbol, name: s.name, exchange: s.exchange }));
+        return json(res, 200, matches);
+    }
+
     if (path === '/stocks/quotes' && method === 'POST') {
         const body = JSON.parse((await readBody(req)) || '{}') as { symbols?: string[] };
         const out = (body.symbols ?? []).map((s) => {
@@ -248,9 +268,17 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         const resolution = url.searchParams.get('resolution') ?? 'D';
         const stock = state.stocks.find((s) => s.symbol === symbol);
         const base = stock?.price ?? 100;
-        const points = resolution === '60' ? 24 : resolution === 'D' ? 30 : resolution === 'W' ? 52 : 60;
+        const points =
+            resolution === '60' ? 24 : resolution === 'D' ? 30 : resolution === 'W' ? 52 : 60;
         const now = Math.floor(Date.now() / 1000);
-        const step = resolution === '60' ? 3600 : resolution === 'D' ? 86400 : resolution === 'W' ? 604800 : 2592000;
+        const step =
+            resolution === '60'
+                ? 3600
+                : resolution === 'D'
+                  ? 86400
+                  : resolution === 'W'
+                    ? 604800
+                    : 2592000;
         const c = Array.from({ length: points }, (_, i) => base + Math.sin(i / 3) * 5 + i * 0.1);
         const t = Array.from({ length: points }, (_, i) => now - (points - i) * step);
         return json(res, 200, { c, t, h: c, l: c, o: c, s: 'ok', v: c.map(() => 1000) });
@@ -306,7 +334,8 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
 
     if (path === '/portfolio/history' && method === 'GET') {
         const interval = url.searchParams.get('interval') ?? '1M';
-        const points = interval === '1D' ? 24 : interval === '1W' ? 7 : interval === '1M' ? 30 : 365;
+        const points =
+            interval === '1D' ? 24 : interval === '1W' ? 7 : interval === '1M' ? 30 : 365;
         const now = Date.now();
         const data = Array.from({ length: points }, (_, i) => ({
             timestamp: new Date(now - (points - i) * 86400000).toISOString(),
@@ -316,7 +345,10 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
     }
 
     if (path === '/portfolio/buy' && method === 'POST') {
-        const body = JSON.parse((await readBody(req)) || '{}') as { symbol: string; quantity: number };
+        const body = JSON.parse((await readBody(req)) || '{}') as {
+            symbol: string;
+            quantity: number;
+        };
         if (state.behavior.rejectBuy === 'INSUFFICIENT_FUNDS') {
             return json(res, 400, { error: 'Insufficient funds' });
         }
@@ -340,7 +372,10 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
     }
 
     if (path === '/portfolio/sell' && method === 'POST') {
-        const body = JSON.parse((await readBody(req)) || '{}') as { symbol: string; quantity: number };
+        const body = JSON.parse((await readBody(req)) || '{}') as {
+            symbol: string;
+            quantity: number;
+        };
         if (state.behavior.rejectSell === 'INSUFFICIENT_QUANTITY') {
             return json(res, 400, { error: 'Not enough shares to sell' });
         }

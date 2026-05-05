@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const MOCK_BASE = process.env.MOCK_API_BASE_URL ?? 'http://localhost:5174';
 const SEED_EMAIL = process.env.PLAYWRIGHT_TEST_EMAIL ?? 'e2e-user@tradelayers.test';
 const SEED_PASSWORD = process.env.PLAYWRIGHT_TEST_PASSWORD ?? 'Password!23';
-const EMULATOR_HOST = 'http://localhost:9099';
+const EMULATOR_HOST = 'http://127.0.0.1:9099';
 
 const getEmulatorIdToken = async (): Promise<string> => {
     const r = await fetch(
@@ -11,7 +11,11 @@ const getEmulatorIdToken = async (): Promise<string> => {
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: SEED_EMAIL, password: SEED_PASSWORD, returnSecureToken: true }),
+            body: JSON.stringify({
+                email: SEED_EMAIL,
+                password: SEED_PASSWORD,
+                returnSecureToken: true,
+            }),
         },
     );
     const body = (await r.json()) as { idToken: string };

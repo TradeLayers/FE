@@ -8,7 +8,10 @@ test.describe('Stock price chart', () => {
         await expect(page.getByTestId('stock-price-chart')).toBeVisible();
     });
 
-    test.fixme('switching timeframe re-renders chart with new resolution', async ({ page, authedPage }) => {
+    test.fixme('switching timeframe re-renders chart with new resolution', async ({
+        page,
+        authedPage,
+    }) => {
         // Requires data-testid="chart-tf-1D|1W|1M|1Y" on toggle buttons in StockPriceChart.
         await authedPage;
         await page.getByTestId('nav-stocks').click();

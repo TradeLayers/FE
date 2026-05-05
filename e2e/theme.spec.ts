@@ -3,13 +3,17 @@ import { test, expect } from './fixtures';
 test.describe('Theme persistence', () => {
     test('toggling theme persists across reloads', async ({ page }) => {
         await page.goto('/');
-        const initial = await page.evaluate(() => window.localStorage.getItem('tradeLayersThemeMode'));
+        const initial = await page.evaluate(() =>
+            window.localStorage.getItem('tradeLayersThemeMode'),
+        );
         await page.getByTestId('theme-toggle').click();
         await page.waitForFunction(
             (prev) => window.localStorage.getItem('tradeLayersThemeMode') !== prev,
             initial,
         );
-        const after = await page.evaluate(() => window.localStorage.getItem('tradeLayersThemeMode'));
+        const after = await page.evaluate(() =>
+            window.localStorage.getItem('tradeLayersThemeMode'),
+        );
         expect(after).not.toEqual(initial);
 
         await page.reload();
@@ -23,9 +27,7 @@ test.describe('Theme persistence', () => {
         await page.goto('/');
         await page.evaluate(() => window.localStorage.removeItem('tradeLayersThemeMode'));
         await page.reload();
-        const mode = await page.evaluate(() =>
-            window.localStorage.getItem('tradeLayersThemeMode'),
-        );
+        const mode = await page.evaluate(() => window.localStorage.getItem('tradeLayersThemeMode'));
         // First visit writes 'dark' on mount via effect
         expect(mode).toEqual('dark');
     });

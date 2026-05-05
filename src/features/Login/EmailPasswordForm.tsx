@@ -75,10 +75,18 @@ export const EmailPasswordForm: React.FC = () => {
             } catch {
                 /* swallow; AuthListener will retry */
             }
-            dispatch(addInfo({ infoMessage: 'Successfully logged in', status: InfoMessageStatus.Success }));
+            dispatch(
+                addInfo({
+                    infoMessage: 'Successfully logged in',
+                    status: InfoMessageStatus.Success,
+                }),
+            );
             navigate('/');
         } catch (e: unknown) {
-            const code = e instanceof Error && 'code' in e ? String((e as { code: string }).code) : String(e);
+            const code =
+                e instanceof Error && 'code' in e
+                    ? String((e as { code: string }).code)
+                    : String(e);
             setError(friendly(code));
         } finally {
             setBusy(false);
@@ -88,7 +96,11 @@ export const EmailPasswordForm: React.FC = () => {
     return (
         <Box data-testid="email-password-form" sx={{ width: '100%', mt: 2 }}>
             <Typography variant="h6" data-testid="auth-mode-title" sx={{ mb: 1 }}>
-                {mode === 'login' ? 'Log in' : mode === 'register' ? 'Create account' : 'Reset password'}
+                {mode === 'login'
+                    ? 'Log in'
+                    : mode === 'register'
+                      ? 'Create account'
+                      : 'Reset password'}
             </Typography>
             <Stack spacing={2}>
                 <TextField
@@ -96,7 +108,9 @@ export const EmailPasswordForm: React.FC = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    inputProps={{ 'data-testid': mode === 'forgot' ? 'reset-email' : 'login-email' }}
+                    inputProps={{
+                        'data-testid': mode === 'forgot' ? 'reset-email' : 'login-email',
+                    }}
                     fullWidth
                 />
                 {mode !== 'forgot' && (
@@ -142,7 +156,15 @@ export const EmailPasswordForm: React.FC = () => {
                     }
                     fullWidth
                 >
-                    {busy ? <CircularProgress size={20} /> : mode === 'login' ? 'Log in' : mode === 'register' ? 'Create account' : 'Send reset email'}
+                    {busy ? (
+                        <CircularProgress size={20} />
+                    ) : mode === 'login' ? (
+                        'Log in'
+                    ) : mode === 'register' ? (
+                        'Create account'
+                    ) : (
+                        'Send reset email'
+                    )}
                 </Button>
                 <Stack direction="row" justifyContent="space-between">
                     {mode === 'login' && (

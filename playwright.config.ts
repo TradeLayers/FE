@@ -4,7 +4,7 @@ import path from 'path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5173';
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:5179';
 const MOCK_API_PORT = process.env.MOCK_API_PORT ?? '5174';
 const VITE_API_URL = `http://localhost:${MOCK_API_PORT}/api`;
 
@@ -49,21 +49,21 @@ export default defineConfig({
                   command:
                       'npx --yes firebase-tools@13 emulators:start --only auth --project app-local-8bfd8',
                   cwd: './e2e',
-                  url: 'http://localhost:9099/emulator/v1/projects/app-local-8bfd8/config',
+                  url: 'http://127.0.0.1:9099/emulator/v1/projects/app-local-8bfd8/config',
                   reuseExistingServer: !process.env.CI,
                   timeout: 120_000,
                   stdout: 'pipe',
                   stderr: 'pipe',
               },
               {
-                  command: 'npm run dev',
+                  command: 'npx vite --port 5179 --strictPort --host 127.0.0.1',
                   url: baseURL,
                   reuseExistingServer: !process.env.CI,
                   timeout: 120_000,
                   env: {
                       VITE_API_URL,
                       VITE_USE_AUTH_EMULATOR: 'true',
-                      VITE_AUTH_EMULATOR_HOST: 'http://localhost:9099',
+                      VITE_AUTH_EMULATOR_HOST: 'http://127.0.0.1:9099',
                   },
               },
           ],

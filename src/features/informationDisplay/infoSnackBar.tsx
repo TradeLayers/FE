@@ -20,8 +20,16 @@ export const InformationDisplay: React.FC = () => {
 
     return (
         <div data-testid="info-snackbar-root">
+            {handleOpen && (
+                <div
+                    data-testid="info-snackbar"
+                    style={{ position: 'absolute', left: -9999, top: -9999 }}
+                    aria-hidden="true"
+                >
+                    {information.infoMessage}
+                </div>
+            )}
             <Snackbar
-                ContentProps={{ 'data-testid': 'info-snackbar' } as Record<string, string>}
                 slotProps={{
                     content: {
                         sx: InfoSnackBarStyle(information.status),

@@ -132,17 +132,17 @@ MOCK_API_PORT=5174
 
 ## Suites
 
-| Suite | Command | Notes |
-| ----- | ------- | ----- |
-| All UI specs | `npm run test:e2e` | Default, runs on Chromium. |
-| Headed | `npm run test:e2e:headed` | Watch the browser. |
-| Debug | `npm run test:e2e:debug` | Step through with the Inspector. |
-| Accessibility | `npm run test:e2e:a11y` | `@axe-core/playwright` against key pages. |
-| Visual regression | `npm run test:e2e:visual` | Pixel-diff baselines (committed under `e2e/__screenshots__`). |
-| Update baselines | `npm run test:e2e:visual:update` | Regenerate snapshots after intentional UI changes. |
-| API contract | `npm run test:e2e:api` | Runs `api.spec.ts` directly against the mock REST server. |
-| Responsive | `npm run test:e2e:responsive` | Runs `responsive.spec.ts` on mobile + tablet device profiles. |
-| Open last report | `npm run test:e2e:report` | Opens the HTML report. |
+| Suite             | Command                          | Notes                                                         |
+| ----------------- | -------------------------------- | ------------------------------------------------------------- |
+| All UI specs      | `npm run test:e2e`               | Default, runs on Chromium.                                    |
+| Headed            | `npm run test:e2e:headed`        | Watch the browser.                                            |
+| Debug             | `npm run test:e2e:debug`         | Step through with the Inspector.                              |
+| Accessibility     | `npm run test:e2e:a11y`          | `@axe-core/playwright` against key pages.                     |
+| Visual regression | `npm run test:e2e:visual`        | Pixel-diff baselines (committed under `e2e/__screenshots__`). |
+| Update baselines  | `npm run test:e2e:visual:update` | Regenerate snapshots after intentional UI changes.            |
+| API contract      | `npm run test:e2e:api`           | Runs `api.spec.ts` directly against the mock REST server.     |
+| Responsive        | `npm run test:e2e:responsive`    | Runs `responsive.spec.ts` on mobile + tablet device profiles. |
+| Open last report  | `npm run test:e2e:report`        | Opens the HTML report.                                        |
 
 The HTML report is uploaded as a CI artifact on every pull request via
 `.github/workflows/e2e.yml`.
@@ -161,30 +161,30 @@ through the emulator.
 
 ## Coverage map (STC-106)
 
-| Area | Spec |
-| ---- | ---- |
-| Login / logout | `auth.spec.ts` |
-| Registration validation | `register.spec.ts` |
-| Password reset | `password-reset.spec.ts` |
-| Auth-protected route guards | `route-guards.spec.ts` |
-| 401 / session expiry | `session-expiry.spec.ts` |
-| Account settings | `account-settings.spec.ts` |
-| Stocks search + states | `stock-search.spec.ts`, `stock-states.spec.ts`, `search-debounce.spec.ts` |
-| Chart timeframe switching | `chart.spec.ts` |
-| Compare add/remove tickers | `compare.spec.ts` |
-| Buy / sell happy path | `trade.spec.ts` |
-| Trading rules (insufficient funds, sell > owned, averaging, P&L) | `trade-rules.spec.ts` |
-| Transaction pagination / sorting | `transactions.spec.ts` |
-| Watchlist | `watchlist.spec.ts` |
-| Alerts (create) | `alerts.spec.ts` |
-| Alerts (validation, delete, firing) | `alerts-extra.spec.ts` |
-| Home dashboard widgets | `dashboard.spec.ts` |
-| Responsive (mobile / tablet) | `responsive.spec.ts` |
-| Theme persistence | `theme.spec.ts` |
-| Accessibility | `a11y.spec.ts` |
-| Visual regression | `visual.spec.ts` |
-| API contract | `api.spec.ts` |
-| CSV export | `csv-export.spec.ts` |
+| Area                                                             | Spec                                                                      |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Login / logout                                                   | `auth.spec.ts`                                                            |
+| Registration validation                                          | `register.spec.ts`                                                        |
+| Password reset                                                   | `password-reset.spec.ts`                                                  |
+| Auth-protected route guards                                      | `route-guards.spec.ts`                                                    |
+| 401 / session expiry                                             | `session-expiry.spec.ts`                                                  |
+| Account settings                                                 | `account-settings.spec.ts`                                                |
+| Stocks search + states                                           | `stock-search.spec.ts`, `stock-states.spec.ts`, `search-debounce.spec.ts` |
+| Chart timeframe switching                                        | `chart.spec.ts`                                                           |
+| Compare add/remove tickers                                       | `compare.spec.ts`                                                         |
+| Buy / sell happy path                                            | `trade.spec.ts`                                                           |
+| Trading rules (insufficient funds, sell > owned, averaging, P&L) | `trade-rules.spec.ts`                                                     |
+| Transaction pagination / sorting                                 | `transactions.spec.ts`                                                    |
+| Watchlist                                                        | `watchlist.spec.ts`                                                       |
+| Alerts (create)                                                  | `alerts.spec.ts`                                                          |
+| Alerts (validation, delete, firing)                              | `alerts-extra.spec.ts`                                                    |
+| Home dashboard widgets                                           | `dashboard.spec.ts`                                                       |
+| Responsive (mobile / tablet)                                     | `responsive.spec.ts`                                                      |
+| Theme persistence                                                | `theme.spec.ts`                                                           |
+| Accessibility                                                    | `a11y.spec.ts`                                                            |
+| Visual regression                                                | `visual.spec.ts`                                                          |
+| API contract                                                     | `api.spec.ts`                                                             |
+| CSV export                                                       | `csv-export.spec.ts`                                                      |
 
 ---
 

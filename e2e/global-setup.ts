@@ -1,6 +1,6 @@
 import { startMockServer } from './mock-server';
 
-const EMULATOR_HOST = 'http://localhost:9099';
+const EMULATOR_HOST = 'http://127.0.0.1:9099';
 const EMULATOR_PROJECT = 'app-local-8bfd8';
 const SEED_EMAIL = process.env.PLAYWRIGHT_TEST_EMAIL ?? 'e2e-user@tradelayers.test';
 const SEED_PASSWORD = process.env.PLAYWRIGHT_TEST_PASSWORD ?? 'Password!23';
@@ -21,23 +21,19 @@ const waitFor = async (url: string, timeoutMs = 30_000): Promise<void> => {
 
 const seedEmulatorUser = async (): Promise<void> => {
     // Wipe all users first so each run is deterministic
-    await fetch(
-        `${EMULATOR_HOST}/emulator/v1/projects/${EMULATOR_PROJECT}/accounts`,
-        { method: 'DELETE' },
-    ).catch(() => undefined);
+    await fetch(`${EMULATOR_HOST}/emulator/v1/projects/${EMULATOR_PROJECT}/accounts`, {
+        method: 'DELETE',
+    }).catch(() => undefined);
 
-    await fetch(
-        `${EMULATOR_HOST}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-key`,
-        {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email: SEED_EMAIL,
-                password: SEED_PASSWORD,
-                returnSecureToken: true,
-            }),
-        },
-    );
+    await fetch(`${EMULATOR_HOST}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-key`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: SEED_EMAIL,
+            password: SEED_PASSWORD,
+            returnSecureToken: true,
+        }),
+    });
 };
 
 async function globalSetup(): Promise<() => Promise<void>> {
