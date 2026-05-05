@@ -99,10 +99,10 @@ const MainPage: React.FC = () => {
     }, [dispatch, isLoggedIn]);
 
     return (
-        <Box sx={PageWrapper}>
+        <Box sx={PageWrapper} data-testid="app-shell">
             <InformationDisplay />
             <AlertPoller enabled={isLoggedIn} />
-            <Box sx={HeaderRow}>
+            <Box sx={HeaderRow} data-testid="app-header">
                 <Button
                     variant="text"
                     size="large"
@@ -146,6 +146,7 @@ const MainPage: React.FC = () => {
                         size="large"
                         sx={NavButton}
                         onClick={() => handleNavigate('/stocks')}
+                        data-testid="nav-stocks"
                     >
                         Stocks
                     </Button>
@@ -163,6 +164,7 @@ const MainPage: React.FC = () => {
                             size="large"
                             sx={NavButton}
                             onClick={() => handleNavigate('/compare')}
+                            data-testid="nav-compare"
                         >
                             Compare
                         </Button>
@@ -174,6 +176,7 @@ const MainPage: React.FC = () => {
                                 size="large"
                                 sx={NavButton}
                                 onClick={() => handleNavigate('/account')}
+                                data-testid="nav-account"
                             >
                                 Account
                             </Button>
@@ -208,7 +211,9 @@ const MainPage: React.FC = () => {
                             </Box>
                         </Box>
                     )}
-                    <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
+                    <Box data-testid={isLoggedIn ? 'logout-button' : 'login-link'}>
+                        <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
+                    </Box>
                 </Box>
             </Box>
             <Outlet />

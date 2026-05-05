@@ -19,8 +19,9 @@ export const InformationDisplay: React.FC = () => {
     };
 
     return (
-        <div>
+        <div data-testid="info-snackbar-root">
             <Snackbar
+                ContentProps={{ 'data-testid': 'info-snackbar' } as Record<string, string>}
                 slotProps={{
                     content: {
                         sx: InfoSnackBarStyle(information.status),
