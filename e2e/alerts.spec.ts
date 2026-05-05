@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import { openAccountTab } from './helpers/account';
 
 test('create a price alert', async ({ page, authedPage }) => {
     await authedPage;
@@ -12,7 +13,6 @@ test('create a price alert', async ({ page, authedPage }) => {
 
     await expect(page.getByTestId('info-snackbar')).toContainText(/alert/i);
 
-    await page.getByTestId('nav-account').click();
-    await page.getByRole('tab', { name: 'Alerts' }).click();
+    await openAccountTab(page, 'alerts');
     await expect(page.getByTestId('alert-row').first()).toBeVisible();
 });

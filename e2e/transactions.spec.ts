@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import { openAccountTab } from './helpers/account';
 
 test.describe('Transaction history', () => {
     test('shows transactions in the table', async ({ page, authedPage, mockApi }) => {
@@ -13,8 +14,7 @@ test.describe('Transaction history', () => {
         }));
         await mockApi.seed('transactions', txs);
         await authedPage;
-        await page.getByTestId('nav-account').click();
-        await page.getByRole('tab', { name: /Transaction History/i }).click();
+        await openAccountTab(page, 'transactions');
         await expect(page.getByText('AAPL').first()).toBeVisible();
     });
 
@@ -31,8 +31,7 @@ test.describe('Transaction history', () => {
         }));
         await mockApi.seed('transactions', txs);
         await authedPage;
-        await page.getByTestId('nav-account').click();
-        await page.getByRole('tab', { name: /Transaction History/i }).click();
+        await openAccountTab(page, 'transactions');
         await page.getByTestId('transactions-next-page').click();
         await expect(page.getByTestId('transactions-page-indicator')).toContainText(/2/);
     });
@@ -60,8 +59,7 @@ test.describe('Transaction history', () => {
             },
         ]);
         await authedPage;
-        await page.getByTestId('nav-account').click();
-        await page.getByRole('tab', { name: /Transaction History/i }).click();
+        await openAccountTab(page, 'transactions');
         await page.getByTestId('tx-sort-symbol').click();
         // Assert order
     });

@@ -26,8 +26,6 @@ export const finalizeLogin = async (
     } catch {
         /* AuthListener will retry */
     }
-    dispatch(
-        addInfo({ infoMessage: 'Successfully logged in', status: InfoMessageStatus.Success }),
-    );
+    dispatch(addInfo({ infoMessage: 'Successfully logged in', status: InfoMessageStatus.Success }));
     navigate('/');
 };

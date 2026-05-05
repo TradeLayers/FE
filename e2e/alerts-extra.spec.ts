@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import { openAccountTab } from './helpers/account';
 
 test.describe('Price alerts CRUD', () => {
     test('rejects invalid threshold (zero or negative)', async ({ page, authedPage }) => {
@@ -25,8 +26,7 @@ test.describe('Price alerts CRUD', () => {
             },
         ]);
         await authedPage;
-        await page.getByTestId('nav-account').click();
-        await page.getByRole('tab', { name: /Alerts/i }).click();
+        await openAccountTab(page, 'alerts');
         const row = page.getByTestId('alert-row').first();
         await expect(row).toBeVisible();
         const deleteBtn = row.getByTestId('alert-delete');
@@ -57,8 +57,7 @@ test.describe('Price alerts CRUD', () => {
             },
         ]);
         await authedPage;
-        await page.getByTestId('nav-account').click();
-        await page.getByRole('tab', { name: /Alerts/i }).click();
+        await openAccountTab(page, 'alerts');
         await expect(page.getByTestId('alert-row-triggered')).toBeVisible();
     });
 });

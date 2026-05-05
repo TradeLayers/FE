@@ -32,20 +32,25 @@ export const test = base.extend<Fixtures>({
     auth: async ({}, use) => {
         await use({ email: SEED_EMAIL, password: SEED_PASSWORD });
     },
-    mockApi: async ({ request }, use) => {
-        const api: MockApi = {
-            reset: (overrides) => adminPost(request, '/reset', overrides ?? {}),
-            setBehavior: (behavior) => adminPost(request, '/behavior', behavior),
-            seed: (kind, items) => adminPost(request, `/seed/${kind}`, items),
-            setBalance: (balance) => adminPost(request, '/balance', { balance }),
-            getState: async () => {
-                const r = await request.get(`${MOCK_BASE}/__admin/state`);
-                return r.ok() ? ((await r.json()) as Record<string, unknown>) : {};
-            },
-        };
-        await api.reset();
-        await use(api);
-    },
+    mockApi: [
+        async ({ request }, use) => {
+            const api: MockApi = {
+                reset: (overrides) => adminPost(request, '/reset', overrides ?? {}),
+                setBehavior: (behavior) => adminPost(request, '/behavior', behavior),
+                seed: (kind, items) => adminPost(request, `/seed/${kind}`, items),
+                setBalance: (balance) => adminPost(request, '/balance', { balance }),
+                getState: async () => {
+                    const r = await request.get(`${MOCK_BASE}/__admin/state`);
+                    return r.ok() ? ((await r.json()) as Record<string, unknown>) : {};
+                },
+            };
+            await api.reset();
+            await use(api);
+        },
+        // auto: every spec gets a fresh mock state, even ones that don't
+        // destructure mockApi — otherwise state leaks between tests.
+        { auto: true },
+    ],
     authedPage: [
         async ({ page, auth }, use) => {
             await page.goto('/login');

@@ -1,9 +1,9 @@
 import { test, expect } from './fixtures';
+import { openAccountTab } from './helpers/account';
 
 test('export portfolio transactions as CSV', async ({ page, authedPage }) => {
     await authedPage;
-    await page.getByTestId('nav-account').click();
-    await page.getByRole('tab', { name: 'Transaction History' }).click();
+    await openAccountTab(page, 'transactions');
 
     const downloadPromise = page.waitForEvent('download');
     await page.getByTestId('export-csv').click();

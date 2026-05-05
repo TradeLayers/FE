@@ -1,5 +1,11 @@
 import { startMockServer } from './mock-server';
-import { EMULATOR_HOST, EMULATOR_PROJECT, MOCK_API_PORT, SEED_EMAIL, SEED_PASSWORD } from './constants';
+import {
+    EMULATOR_HOST,
+    EMULATOR_PROJECT,
+    MOCK_API_PORT,
+    SEED_EMAIL,
+    SEED_PASSWORD,
+} from './constants';
 
 const waitFor = async (url: string, timeoutMs = 30_000): Promise<void> => {
     const start = Date.now();

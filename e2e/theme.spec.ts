@@ -9,10 +9,10 @@ test.describe('Theme persistence', () => {
         await page.goto('/');
         const initial = await readMode(page);
         await page.getByTestId('theme-toggle').click();
-        await page.waitForFunction(
-            ({ key, prev }) => window.localStorage.getItem(key) !== prev,
-            { key: THEME_STORAGE_KEY, prev: initial },
-        );
+        await page.waitForFunction(({ key, prev }) => window.localStorage.getItem(key) !== prev, {
+            key: THEME_STORAGE_KEY,
+            prev: initial,
+        });
         const after = await readMode(page);
         expect(after).not.toEqual(initial);
 
