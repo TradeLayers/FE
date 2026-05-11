@@ -48,8 +48,9 @@ export const RightPanel: SxProps<Theme> = {
     p: 3,
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+    overflowY: 'auto',
 };
 
 export const ProfileHeader: SxProps<Theme> = {
@@ -71,4 +72,14 @@ export const DetailRow: SxProps<Theme> = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+};
+
+export const TradeActions: SxProps<Theme> = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 2,
+    mt: 4,
+    mb: 2,
+    flexWrap: 'wrap',
 };

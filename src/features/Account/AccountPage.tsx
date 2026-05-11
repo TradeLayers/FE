@@ -20,8 +20,10 @@ import {
     TableHead,
     TableRow,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useDispatch, useSelector } from 'react-redux';
@@ -35,16 +37,18 @@ import { addUserInfo, resetUserInfo } from '@store/userSlice';
 import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus, type Information } from '@models/informationType';
 import { createOrFetchUser, deleteUser, updateUserFields } from '@api/userApi';
-import { getHoldings, getTransactions } from '@api/portfolioApi';
+import { getHoldings, getTransactions, getTransactionsCsv } from '@api/portfolioApi';
 import { type HoldingView, type TransactionView } from '@models/portfolioTypes';
 
 import PortfolioChart from './PortfolioChart';
+import AlertsPanel from './AlertsPanel';
 import WatchlistPanel from './WatchlistPanel';
 import StockStatsCard from './StockStatsCard';
 import TradeDialog from './TradeDialog';
 import { formatCurrency, formatDateTime, formatQuantity } from './format';
+import HoldingLogo from '../../components/HoldingLogo';
 
-type TabValue = 'account' | 'holdings' | 'transactions' | 'watchlist';
+type TabValue = 'account' | 'holdings' | 'transactions' | 'watchlist' | 'alerts';
 
 const AccountPage: React.FC = () => {
     const dispatch = useDispatch();
@@ -60,6 +64,8 @@ const AccountPage: React.FC = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
     const [sellTarget, setSellTarget] = useState<HoldingView | null>(null);
+    const [txFilter, setTxFilter] = useState('');
+    const [isExportingCsv, setIsExportingCsv] = useState(false);
 
     const userQuery = useQuery({
         queryKey: ['user'],
@@ -147,8 +153,36 @@ const AccountPage: React.FC = () => {
         setExpandedSymbol((prev) => (prev === symbol ? null : symbol));
     };
 
+    const handleExportCsv = async (): Promise<void> => {
+        setIsExportingCsv(true);
+        try {
+            const blob = await getTransactionsCsv();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'transactions.csv';
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch {
+            pushInfoMessage('Failed to export transactions.', InfoMessageStatus.Error);
+        } finally {
+            setIsExportingCsv(false);
+        }
+    };
+
     const transactions = useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
     const holdings = useMemo(() => holdingsQuery.data ?? [], [holdingsQuery.data]);
+
+    const filteredTransactions = useMemo(() => {
+        const q = txFilter.trim().toLowerCase();
+        if (!q) return transactions;
+        return transactions.filter((t) => (t.symbol || '').toLowerCase().includes(q));
+    }, [transactions, txFilter]);
+
+    useEffect(() => {
+        // Clear filter when leaving the transactions tab so state doesn't persist
+        if (selectedTab !== 'transactions') setTxFilter('');
+    }, [selectedTab]);
 
     const transactionsBySymbol = useMemo(() => {
         const map: Record<string, TransactionView[]> = {};
@@ -175,6 +209,7 @@ const AccountPage: React.FC = () => {
                 <Tab label="Holdings" value="holdings" />
                 <Tab label="Transaction History" value="transactions" />
                 <Tab label="Watchlist" value="watchlist" />
+                <Tab label="Alerts" value="alerts" />
                 <Tab label="Account" value="account" />
             </Tabs>
 
@@ -203,6 +238,7 @@ const AccountPage: React.FC = () => {
                                 <TableHead>
                                     <TableRow>
                                         <TableCell width={48} />
+                                        <TableCell width={40} />
                                         <TableCell>Symbol</TableCell>
                                         <TableCell>Company</TableCell>
                                         <TableCell align="right">Quantity</TableCell>
@@ -233,6 +269,9 @@ const AccountPage: React.FC = () => {
                                                             )}
                                                         </IconButton>
                                                     </TableCell>
+                                                    <TableCell width={40}>
+                                                        <HoldingLogo symbol={holding.symbol} />
+                                                    </TableCell>
                                                     <TableCell>{holding.symbol}</TableCell>
                                                     <TableCell>{holding.name}</TableCell>
                                                     <TableCell align="right">
@@ -259,7 +298,7 @@ const AccountPage: React.FC = () => {
                                                 </TableRow>
                                                 <TableRow>
                                                     <TableCell
-                                                        colSpan={7}
+                                                        colSpan={8}
                                                         sx={{
                                                             py: 0,
                                                             borderBottom: expanded
@@ -302,6 +341,26 @@ const AccountPage: React.FC = () => {
 
             {selectedTab === 'transactions' && (
                 <>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1.5 }}>
+                        <Tooltip
+                            title={
+                                transactions.length === 0
+                                    ? 'No transactions to export'
+                                    : 'Export transaction history'
+                            }
+                        >
+                            <span>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<FileDownloadIcon />}
+                                    onClick={handleExportCsv}
+                                    disabled={transactions.length === 0 || isExportingCsv}
+                                >
+                                    Export CSV
+                                </Button>
+                            </span>
+                        </Tooltip>
+                    </Box>
                     {transactionsQuery.isLoading && (
                         <Typography color="text.secondary">Loading transactions...</Typography>
                     )}
@@ -313,7 +372,30 @@ const AccountPage: React.FC = () => {
                             <Typography color="text.secondary">No transactions yet.</Typography>
                         </Paper>
                     )}
+
+                    {/* Filter input shown when there are transactions */}
                     {transactions.length > 0 && (
+                        <Box sx={{ mb: 2 }}>
+                            <TextField
+                                label="Filter by symbol"
+                                placeholder="Type symbol (e.g. AAPL)"
+                                value={txFilter}
+                                onChange={(e) => setTxFilter(e.target.value)}
+                                fullWidth
+                                size="small"
+                            />
+                        </Box>
+                    )}
+
+                    {transactions.length > 0 && filteredTransactions.length === 0 && (
+                        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+                            <Typography color="text.secondary">
+                                No transactions match your filter
+                            </Typography>
+                        </Paper>
+                    )}
+
+                    {filteredTransactions.length > 0 && (
                         <TableContainer component={Paper} variant="outlined">
                             <Table size="small">
                                 <TableHead>
@@ -327,7 +409,7 @@ const AccountPage: React.FC = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {[...transactions]
+                                    {[...filteredTransactions]
                                         .sort(
                                             (a, b) =>
                                                 new Date(b.transactionDate).getTime() -
@@ -361,6 +443,8 @@ const AccountPage: React.FC = () => {
             )}
 
             {selectedTab === 'watchlist' && <WatchlistPanel />}
+
+            {selectedTab === 'alerts' && <AlertsPanel />}
 
             {selectedTab === 'account' && (
                 <Paper variant="outlined" sx={{ p: 2, maxWidth: 700 }}>

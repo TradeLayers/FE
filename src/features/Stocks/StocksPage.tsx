@@ -2,8 +2,10 @@ import { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, Typography, TextField, Button, Divider } from '@mui/material';
+import AddAlertIcon from '@mui/icons-material/AddAlert';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { useSearchParams } from 'react-router-dom';
 
 import { authorizedApi } from '@api/axiosConfig';
 import { addToWatchlist, getWatchlist, removeFromWatchlist } from '@api/watchlistApi';
@@ -14,6 +16,8 @@ import { type RootState } from '@store/store';
 import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus } from '@models/informationType';
 import TradeDialog from '../Account/TradeDialog';
+import CreateAlertDialog from './CreateAlertDialog';
+import StockPriceChart from './StockPriceChart';
 import {
     PageContainer,
     LeftPanel,
@@ -24,19 +28,29 @@ import {
     ProfileHeader,
     ProfileDetails,
     DetailRow,
+    TradeActions,
 } from './StocksPage.styles';
 
 const StocksPage: React.FC = () => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [search, setSearch] = useState('');
-    const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+    const [selectedSymbol, setSelectedSymbol] = useState<string | null>(
+        searchParams.get('symbol'),
+    );
     const [buyOpen, setBuyOpen] = useState(false);
+    const [alertOpen, setAlertOpen] = useState(false);
 
     const user = useSelector((state: RootState) => state.userSliceName);
     const loggedIn = useSelector((state: RootState) => isUser(state.userSliceName));
     const debouncedSearch = useDebounce(search, 300);
+    const symbolParam = searchParams.get('symbol');
+
+    useEffect(() => {
+        setSelectedSymbol(symbolParam);
+    }, [symbolParam]);
 
     const { data: popularStocks } = useQuery<StockListItem[]>({
         queryKey: ['stocks'],
@@ -127,7 +141,10 @@ const StocksPage: React.FC = () => {
                         <Box
                             key={item.symbol}
                             sx={selectedSymbol === item.symbol ? StockRowSelected : StockRow}
-                            onClick={() => setSelectedSymbol(item.symbol)}
+                            onClick={() => {
+                                setSelectedSymbol(item.symbol);
+                                setSearchParams({ symbol: item.symbol });
+                            }}
                         >
                             <Box>
                                 <Typography variant="body1" fontWeight={600}>
@@ -181,7 +198,11 @@ const StocksPage: React.FC = () => {
                             </Button>
                         </Box>
                         {profile.price > 0 && (
-                            <Typography variant="h4" color="success.main" sx={{ mb: 3 }}>
+                            <Typography
+                                variant="h4"
+                                color="success.main"
+                                sx={{ mb: 3, textAlign: 'center' }}
+                            >
                                 ${profile.price.toFixed(2)}
                             </Typography>
                         )}
@@ -203,14 +224,25 @@ const StocksPage: React.FC = () => {
                                 <Typography>${(profile.marketCap / 1000).toFixed(1)}B</Typography>
                             </Box>
                         </Box>
-                        <Button
-                            variant="contained"
-                            sx={{ mt: 4, px: 6, py: 1.5 }}
-                            disabled={profile.price <= 0}
-                            onClick={() => setBuyOpen(true)}
-                        >
-                            Buy
-                        </Button>
+                        <Box sx={TradeActions}>
+                            <Button
+                                variant="contained"
+                                sx={{ px: 6, py: 1.5 }}
+                                disabled={profile.price <= 0}
+                                onClick={() => setBuyOpen(true)}
+                            >
+                                Buy
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                startIcon={<AddAlertIcon />}
+                                sx={{ px: 4, py: 1.5 }}
+                                onClick={() => setAlertOpen(true)}
+                            >
+                                Create Alert
+                            </Button>
+                        </Box>
+                        <StockPriceChart symbol={profile.symbol} />
                     </>
                 ) : (
                     <Typography color="text.secondary">Select a stock to view details</Typography>
@@ -225,7 +257,19 @@ const StocksPage: React.FC = () => {
                     symbol={profile.symbol}
                     name={profile.name}
                     currentPrice={profile.price}
-                    availableBalance={user.balance}
+                    availableBalance={
+                        typeof user.balance === 'string' ? parseFloat(user.balance) : user.balance
+                    }
+                />
+            )}
+
+            {profile && alertOpen && (
+                <CreateAlertDialog
+                    open={alertOpen}
+                    onClose={() => setAlertOpen(false)}
+                    symbol={profile.symbol}
+                    name={profile.name}
+                    currentPrice={profile.price}
                 />
             )}
         </Box>
@@ -237,7 +281,9 @@ function useDebounce(value: string, delay: number): string {
 
     useEffect(() => {
         const id = setTimeout(() => setDebounced(value), delay);
-        return () => clearTimeout(id);
+        return (): void => {
+            clearTimeout(id);
+        };
     }, [value, delay]);
 
     return debounced;

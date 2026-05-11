@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import {
     CartesianGrid,
+    Legend,
     Line,
     LineChart,
     ResponsiveContainer,
@@ -35,10 +36,25 @@ const PortfolioChart: React.FC = () => {
 
     const chartData = useMemo(() => {
         if (!data) return [];
-        return data.points.map((p) => ({
-            date: new Date(p.date).toLocaleDateString(),
-            investedCapital: p.investedCapital,
-        }));
+        const byDate = new Map<
+            string,
+            { date: string; investedCapital?: number; marketValue?: number }
+        >();
+        for (const point of data.points) {
+            const date = new Date(point.date).toLocaleDateString();
+            byDate.set(date, {
+                ...(byDate.get(date) ?? { date }),
+                investedCapital: point.investedCapital,
+            });
+        }
+        for (const point of data.marketValue) {
+            const date = new Date(point.date).toLocaleDateString();
+            byDate.set(date, {
+                ...(byDate.get(date) ?? { date }),
+                marketValue: point.value,
+            });
+        }
+        return Array.from(byDate.values());
     }, [data]);
 
     return (
@@ -52,7 +68,7 @@ const PortfolioChart: React.FC = () => {
                 <Box>
                     <Typography variant="h6">Portfolio</Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Net invested capital over time. Based on your transaction history.
+                        Invested capital and historical market value over time.
                     </Typography>
                 </Box>
                 <Box sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
@@ -110,10 +126,20 @@ const PortfolioChart: React.FC = () => {
                                 }}
                                 formatter={(value) => formatCurrency(Number(value))}
                             />
+                            <Legend />
                             <Line
                                 type="monotone"
                                 dataKey="investedCapital"
+                                name="Invested capital"
                                 stroke={theme.palette.primary.main}
+                                strokeWidth={2}
+                                dot={{ r: 3 }}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="marketValue"
+                                name="Market value"
+                                stroke={theme.palette.success.main}
                                 strokeWidth={2}
                                 dot={{ r: 3 }}
                             />
