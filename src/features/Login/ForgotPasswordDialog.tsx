@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
+} from '@mui/material';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useDispatch } from 'react-redux';
 
@@ -81,7 +88,8 @@ const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ open, email
 
             dispatch(
                 addInfo({
-                    infoMessage: 'Unable to send a password reset email right now. Try again later.',
+                    infoMessage:
+                        'Unable to send a password reset email right now. Try again later.',
                     status: InfoMessageStatus.Error,
                 }),
             );
@@ -116,7 +124,11 @@ const ForgotPasswordDialog: React.FC<ForgotPasswordDialogProps> = ({ open, email
                 <Button onClick={() => handleClose()} disabled={isSubmitting}>
                     Cancel
                 </Button>
-                <Button onClick={() => void handleSubmit()} variant="contained" disabled={isSubmitting}>
+                <Button
+                    onClick={() => void handleSubmit()}
+                    variant="contained"
+                    disabled={isSubmitting}
+                >
                     Send reset email
                 </Button>
             </DialogActions>

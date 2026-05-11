@@ -137,15 +137,16 @@ export const SignUp: React.FC = () => {
                 <Typography variant="h5" textAlign="center" sx={AdditionalInfo}>
                     Log in to your account
                 </Typography>
-                <Typography
-                    variant="body2"
-                    textAlign="center"
-                    sx={AdditionalInfo}
-                >
+                <Typography variant="body2" textAlign="center" sx={AdditionalInfo}>
                     Use your email and password or continue with Google or GitHub.
                 </Typography>
 
-                <Box component="form" onSubmit={(event) => void handlePasswordAuth(event)} noValidate sx={FormSection}>
+                <Box
+                    component="form"
+                    onSubmit={(event) => void handlePasswordAuth(event)}
+                    noValidate
+                    sx={FormSection}
+                >
                     <TextField
                         label="Email address"
                         type="email"
@@ -197,7 +198,12 @@ export const SignUp: React.FC = () => {
                         </Typography>
                     )}
 
-                    <Button type="submit" variant="contained" fullWidth disabled={isPasswordSignInPending}>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        disabled={isPasswordSignInPending}
+                    >
                         Log in
                     </Button>
                 </Box>
