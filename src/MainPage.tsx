@@ -167,8 +167,8 @@ const MainPage: React.FC = () => {
                             Account
                         </Button>
                     )}
-                    <ThemeToggleButton />
                     <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
+                    <ThemeToggleButton />
                 </Box>
             </Box>
             <Outlet />

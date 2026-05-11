@@ -1,32 +1,43 @@
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
-import { Button, type SxProps, type Theme } from '@mui/material';
+import { IconButton, Tooltip, type SxProps, type Theme } from '@mui/material';
 
 import { useThemeMode } from '@styles/ThemeModeContext';
 
 const ThemeToggleButtonSx: SxProps<Theme> = {
-    minWidth: 136,
-    whiteSpace: 'nowrap',
+    width: 48,
+    height: 48,
+    border: 1,
+    borderColor: 'divider',
+    borderRadius: 2,
     backgroundColor: 'background.paper',
+    '&:hover': {
+        backgroundColor: 'action.hover',
+        borderColor: 'primary.main',
+    },
 };
 
 const ThemeToggleButton: React.FC = () => {
     const { mode, toggleMode } = useThemeMode();
     const nextMode = mode === 'dark' ? 'light' : 'dark';
-    const ModeIcon = nextMode === 'light' ? LightModeOutlinedIcon : DarkModeOutlinedIcon;
+    const isLightMode = mode === 'light';
+    const ModeIcon = isLightMode ? LightModeOutlinedIcon : DarkModeOutlinedIcon;
 
     return (
-        <Button
-            variant="outlined"
-            size="large"
-            sx={ThemeToggleButtonSx}
-            startIcon={<ModeIcon fontSize="small" />}
-            aria-label={`Switch to ${nextMode} mode`}
-            aria-pressed={mode === 'light'}
-            onClick={toggleMode}
-        >
-            {nextMode === 'light' ? 'Light Mode' : 'Dark Mode'}
-        </Button>
+        <Tooltip title={`Switch to ${nextMode} mode`}>
+            <IconButton
+                size="large"
+                sx={{
+                    ...ThemeToggleButtonSx,
+                    color: isLightMode ? 'warning.main' : 'primary.main',
+                }}
+                aria-label={`${mode} mode active. Switch to ${nextMode} mode`}
+                aria-pressed={isLightMode}
+                onClick={toggleMode}
+            >
+                <ModeIcon fontSize="small" />
+            </IconButton>
+        </Tooltip>
     );
 };
 

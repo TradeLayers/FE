@@ -11,7 +11,7 @@ export const Title: SxProps<Theme> = {
 
 export const Description: SxProps<Theme> = {
     width: '100%',
-    maxWidth: 600,
+    maxWidth: 520,
     color: 'text.primary',
     bgcolor: 'background.paper',
     borderRadius: 3,
@@ -21,12 +21,23 @@ export const Description: SxProps<Theme> = {
 
 export const AdditionalInfo: SxProps<Theme> = {
     mt: 1,
-    mb: 3,
     color: 'text.secondary',
 };
 
-export const AuthOptions: SxProps<Theme> = {
+export const FormSection: SxProps<Theme> = {
+    mt: 3,
+    display: 'grid',
+    gap: 2,
+};
+
+export const ForgotPasswordRow: SxProps<Theme> = {
     display: 'flex',
+    justifyContent: 'flex-end',
+    mt: -1,
+};
+
+export const AuthOptions: SxProps<Theme> = {
+    display: 'grid',
     gap: 2,
     color: 'text.primary',
 };
