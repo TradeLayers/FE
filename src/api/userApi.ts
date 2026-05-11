@@ -1,8 +1,21 @@
 import { authorizedApi } from './axiosConfig';
 import { type User, type UserFields } from '@models/userTypes';
+import { type AxiosRequestConfig } from 'axios';
 
-export const createOrFetchUser = async (): Promise<User> => {
-    const response = await authorizedApi.post<User>('/user');
+const withIdToken = (idToken?: string): AxiosRequestConfig | undefined => {
+    if (!idToken) {
+        return undefined;
+    }
+
+    return {
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+        },
+    };
+};
+
+export const createOrFetchUser = async (idToken?: string): Promise<User> => {
+    const response = await authorizedApi.post<User>('/user', undefined, withIdToken(idToken));
     return response.data;
 };
 

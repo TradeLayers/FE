@@ -69,7 +69,7 @@ const AccountPage: React.FC = () => {
 
     const userQuery = useQuery({
         queryKey: ['user'],
-        queryFn: createOrFetchUser,
+        queryFn: () => createOrFetchUser(),
     });
 
     useEffect(() => {

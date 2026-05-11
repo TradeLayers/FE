@@ -67,6 +67,9 @@ Create a `.env` file in the root directory and add:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
+VITE_DONATION_CURRENCY=EUR
+# Optional fallback Stripe Payment Link:
+VITE_DONATION_URL=
 ```
 
 Adjust the URL if your backend runs on a different port or host.

@@ -209,6 +209,7 @@ const MainPage: React.FC = () => {
                         </Box>
                     )}
                     <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
+                    <ThemeToggleButton />
                 </Box>
             </Box>
             <Outlet />
