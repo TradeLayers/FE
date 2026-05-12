@@ -5,9 +5,10 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    MenuItem,
     Stack,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography,
 } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +37,6 @@ const CreateAlertDialog: React.FC<Props> = ({ open, onClose, symbol, name, curre
     const [direction, setDirection] = useState<AlertDirection>('above');
 
     const thresholdPrice = Number(thresholdInput);
-    const validThreshold = Number.isFinite(thresholdPrice) && thresholdPrice > 0;
 
     const mutation = useMutation<PriceAlert>({
         mutationFn: () => createAlert({ symbol, thresholdPrice, direction }),
@@ -63,22 +63,27 @@ const CreateAlertDialog: React.FC<Props> = ({ open, onClose, symbol, name, curre
                     <Typography variant="body2" color="text.secondary">
                         Current price {currentPrice > 0 ? formatCurrency(currentPrice) : '—'}
                     </Typography>
-                    <TextField
-                        label="Direction"
-                        select
+                    <ToggleButtonGroup
                         value={direction}
-                        onChange={(event) => setDirection(event.target.value as AlertDirection)}
+                        exclusive
+                        onChange={(_, value) => {
+                            if (value) setDirection(value as AlertDirection);
+                        }}
                         fullWidth
                     >
-                        <MenuItem value="above">Above</MenuItem>
-                        <MenuItem value="below">Below</MenuItem>
-                    </TextField>
+                        <ToggleButton value="above" data-testid="alert-direction-above">
+                            Above
+                        </ToggleButton>
+                        <ToggleButton value="below" data-testid="alert-direction-below">
+                            Below
+                        </ToggleButton>
+                    </ToggleButtonGroup>
                     <TextField
                         label="Threshold price"
                         type="number"
                         value={thresholdInput}
                         onChange={(event) => setThresholdInput(event.target.value)}
-                        inputProps={{ min: 0, step: '0.01' }}
+                        inputProps={{ min: 0, step: '0.01', 'data-testid': 'alert-threshold' }}
                         fullWidth
                     />
                 </Stack>
@@ -90,7 +95,8 @@ const CreateAlertDialog: React.FC<Props> = ({ open, onClose, symbol, name, curre
                 <Button
                     variant="contained"
                     onClick={() => mutation.mutate()}
-                    disabled={!validThreshold || mutation.isPending}
+                    disabled={mutation.isPending}
+                    data-testid="alert-confirm"
                 >
                     Create
                 </Button>

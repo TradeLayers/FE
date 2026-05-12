@@ -28,3 +28,18 @@ dist-ssr
 .env.local
 .env.development.local
 .env.production.local
+
+# Firebase service account keys (must never be committed)
+firebase.json
+firebase copy.json
+firebase-adminsdk*.json
+serviceAccountKey*.json
+!e2e/firebase.json
+
+# Playwright
+playwright-report
+test-results
+.firebase
+
+# Local task notes
+tasks.md

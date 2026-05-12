@@ -164,7 +164,7 @@ const WatchlistPanel: React.FC = () => {
                 </TableHead>
                 <TableBody>
                     {data.map((item) => (
-                        <TableRow key={item.symbol}>
+                        <TableRow key={item.symbol} data-testid={`watchlist-row-${item.symbol}`}>
                             <TableCell>{item.symbol}</TableCell>
                             <TableCell>{item.name}</TableCell>
                             <TableCell align="right">
@@ -216,6 +216,7 @@ const WatchlistPanel: React.FC = () => {
                                     onClick={() => removeMutation.mutate(item.symbol)}
                                     disabled={removeMutation.isPending}
                                     aria-label={`Remove ${item.symbol}`}
+                                    data-testid="watchlist-remove"
                                 >
                                     <DeleteOutlineIcon fontSize="small" />
                                 </IconButton>

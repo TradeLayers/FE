@@ -9,12 +9,15 @@ import { useSearchParams } from 'react-router-dom';
 
 import { authorizedApi } from '@api/axiosConfig';
 import { addToWatchlist, getWatchlist, removeFromWatchlist } from '@api/watchlistApi';
+import { getHoldings } from '@api/portfolioApi';
 import { type StockListItem, type StockSearchResult, type StockProfile } from '@models/stockTypes';
 import { type WatchlistItem } from '@models/watchlistTypes';
+import { type HoldingView } from '@models/portfolioTypes';
 import { isUser } from '@models/userTypes';
 import { type RootState } from '@store/store';
 import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus } from '@models/informationType';
+import { formatCurrency, formatQuantity } from '../Account/format';
 import TradeDialog from '../Account/TradeDialog';
 import CreateAlertDialog from './CreateAlertDialog';
 import StockPriceChart from './StockPriceChart';
@@ -26,10 +29,20 @@ import {
     StockRowSelected,
     RightPanel,
     ProfileHeader,
-    ProfileDetails,
-    DetailRow,
-    TradeActions,
+    ProfileHeaderInfo,
+    ProfileHeaderActions,
+    PriceBlock,
+    MetricsGrid,
+    MetricCard,
+    OwnedBanner,
 } from './StocksPage.styles';
+
+const formatMarketCap = (marketCap: number): string => {
+    if (!marketCap || marketCap <= 0) return '—';
+    if (marketCap >= 1_000_000) return `$${(marketCap / 1_000_000).toFixed(2)}T`;
+    if (marketCap >= 1_000) return `$${(marketCap / 1_000).toFixed(2)}B`;
+    return `$${marketCap.toFixed(2)}M`;
+};
 
 const StocksPage: React.FC = () => {
     const dispatch = useDispatch();
@@ -37,10 +50,9 @@ const StocksPage: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [search, setSearch] = useState('');
-    const [selectedSymbol, setSelectedSymbol] = useState<string | null>(
-        searchParams.get('symbol'),
-    );
+    const [selectedSymbol, setSelectedSymbol] = useState<string | null>(searchParams.get('symbol'));
     const [buyOpen, setBuyOpen] = useState(false);
+    const [sellOpen, setSellOpen] = useState(false);
     const [alertOpen, setAlertOpen] = useState(false);
 
     const user = useSelector((state: RootState) => state.userSliceName);
@@ -58,7 +70,6 @@ const StocksPage: React.FC = () => {
             const res = await authorizedApi.get<StockListItem[]>('/stocks');
             return res.data;
         },
-        enabled: loggedIn,
     });
 
     const { data: searchResults } = useQuery<StockSearchResult[]>({
@@ -69,7 +80,7 @@ const StocksPage: React.FC = () => {
             );
             return res.data;
         },
-        enabled: loggedIn && debouncedSearch.length > 0,
+        enabled: debouncedSearch.length > 0,
     });
 
     const { data: profile } = useQuery<StockProfile>({
@@ -78,7 +89,7 @@ const StocksPage: React.FC = () => {
             const res = await authorizedApi.get<StockProfile>(`/stocks/profile/${selectedSymbol}`);
             return res.data;
         },
-        enabled: loggedIn && !!selectedSymbol,
+        enabled: !!selectedSymbol,
     });
 
     const { data: watchlist } = useQuery<WatchlistItem[]>({
@@ -87,11 +98,23 @@ const StocksPage: React.FC = () => {
         enabled: loggedIn,
     });
 
+    const { data: holdings } = useQuery<HoldingView[]>({
+        queryKey: ['holdings'],
+        queryFn: getHoldings,
+        enabled: loggedIn,
+    });
+
     const watchedSymbols = useMemo(
         () => new Set((watchlist ?? []).map((w) => w.symbol)),
         [watchlist],
     );
     const isWatched = selectedSymbol ? watchedSymbols.has(selectedSymbol) : false;
+
+    const ownedHolding = useMemo(
+        () => (holdings ?? []).find((h) => h.symbol === selectedSymbol),
+        [holdings, selectedSymbol],
+    );
+    const ownedQuantity = ownedHolding?.quantity ?? 0;
 
     const watchMutation = useMutation({
         mutationFn: async () => {
@@ -133,6 +156,7 @@ const StocksPage: React.FC = () => {
                         placeholder="Search stocks..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        inputProps={{ 'data-testid': 'stocks-search' }}
                     />
                 </Box>
                 <Divider />
@@ -140,6 +164,7 @@ const StocksPage: React.FC = () => {
                     {listItems.map((item) => (
                         <Box
                             key={item.symbol}
+                            data-testid={`stock-row-${item.symbol}`}
                             sx={selectedSymbol === item.symbol ? StockRowSelected : StockRow}
                             onClick={() => {
                                 setSelectedSymbol(item.symbol);
@@ -173,76 +198,132 @@ const StocksPage: React.FC = () => {
                 {profile ? (
                     <>
                         <Box sx={ProfileHeader}>
-                            {profile.logo && (
-                                <img
-                                    src={profile.logo}
-                                    alt={profile.name}
-                                    style={{ width: 48, height: 48, borderRadius: 8 }}
-                                />
-                            )}
-                            <Box sx={{ flex: 1 }}>
-                                <Typography variant="h5" fontWeight={700}>
-                                    {profile.name}
+                            <Box sx={ProfileHeaderInfo}>
+                                {profile.logo && (
+                                    <img
+                                        src={profile.logo}
+                                        alt={profile.name}
+                                        style={{ width: 56, height: 56, borderRadius: 8 }}
+                                    />
+                                )}
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                    <Typography variant="h5" fontWeight={700} noWrap>
+                                        {profile.name}
+                                    </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        data-testid="stock-detail-symbol"
+                                    >
+                                        {profile.symbol} · {profile.exchange}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Box sx={PriceBlock}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Current price
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="h4" fontWeight={700} color="success.main">
+                                    {profile.price > 0
+                                        ? formatCurrency(profile.price)
+                                        : 'Unavailable'}
+                                </Typography>
+                            </Box>
+                            <Box sx={ProfileHeaderActions}>
+                                <Button
+                                    variant="contained"
+                                    disabled={profile.price <= 0}
+                                    onClick={() => setBuyOpen(true)}
+                                    data-testid="stock-detail-buy"
+                                >
+                                    Buy
+                                </Button>
+                                {ownedQuantity > 0 && (
+                                    <Button
+                                        variant="outlined"
+                                        color="error"
+                                        disabled={profile.price <= 0}
+                                        onClick={() => setSellOpen(true)}
+                                        data-testid="stock-detail-sell"
+                                    >
+                                        Sell
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="outlined"
+                                    startIcon={isWatched ? <StarIcon /> : <StarBorderIcon />}
+                                    onClick={() => watchMutation.mutate()}
+                                    disabled={watchMutation.isPending}
+                                    data-testid="stock-detail-watch"
+                                >
+                                    {isWatched ? 'Watching' : 'Watch'}
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<AddAlertIcon />}
+                                    onClick={() => setAlertOpen(true)}
+                                    data-testid="stock-detail-alert"
+                                >
+                                    Alert
+                                </Button>
+                            </Box>
+                        </Box>
+
+                        {ownedQuantity > 0 && (
+                            <Box sx={OwnedBanner}>
+                                <Typography variant="body2">
+                                    You own <strong>{formatQuantity(ownedQuantity)}</strong>{' '}
                                     {profile.symbol}
                                 </Typography>
+                                {profile.price > 0 && (
+                                    <Typography variant="body2">
+                                        Position value{' '}
+                                        <strong>
+                                            {formatCurrency(ownedQuantity * profile.price)}
+                                        </strong>
+                                    </Typography>
+                                )}
                             </Box>
-                            <Button
-                                variant="outlined"
-                                startIcon={isWatched ? <StarIcon /> : <StarBorderIcon />}
-                                onClick={() => watchMutation.mutate()}
-                                disabled={watchMutation.isPending}
-                            >
-                                {isWatched ? 'Watching' : 'Watch'}
-                            </Button>
-                        </Box>
-                        {profile.price > 0 && (
-                            <Typography
-                                variant="h4"
-                                color="success.main"
-                                sx={{ mb: 3, textAlign: 'center' }}
-                            >
-                                ${profile.price.toFixed(2)}
-                            </Typography>
                         )}
-                        <Box sx={ProfileDetails}>
-                            <Box sx={DetailRow}>
-                                <Typography color="text.secondary">Industry</Typography>
-                                <Typography>{profile.industry}</Typography>
+
+                        <Box sx={MetricsGrid}>
+                            <Box sx={MetricCard}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Industry
+                                </Typography>
+                                <Typography variant="body2" fontWeight={600}>
+                                    {profile.industry || '—'}
+                                </Typography>
                             </Box>
-                            <Box sx={DetailRow}>
-                                <Typography color="text.secondary">Exchange</Typography>
-                                <Typography>{profile.exchange}</Typography>
+                            <Box sx={MetricCard}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Country
+                                </Typography>
+                                <Typography variant="body2" fontWeight={600}>
+                                    {profile.country || '—'}
+                                </Typography>
                             </Box>
-                            <Box sx={DetailRow}>
-                                <Typography color="text.secondary">Country</Typography>
-                                <Typography>{profile.country}</Typography>
+                            <Box sx={MetricCard}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Market Cap
+                                </Typography>
+                                <Typography variant="body2" fontWeight={600}>
+                                    {formatMarketCap(profile.marketCap)}
+                                </Typography>
                             </Box>
-                            <Box sx={DetailRow}>
-                                <Typography color="text.secondary">Market Cap</Typography>
-                                <Typography>${(profile.marketCap / 1000).toFixed(1)}B</Typography>
+                            <Box sx={MetricCard}>
+                                <Typography variant="caption" color="text.secondary">
+                                    Exchange
+                                </Typography>
+                                <Typography variant="body2" fontWeight={600}>
+                                    {profile.exchange || '—'}
+                                </Typography>
                             </Box>
                         </Box>
-                        <Box sx={TradeActions}>
-                            <Button
-                                variant="contained"
-                                sx={{ px: 6, py: 1.5 }}
-                                disabled={profile.price <= 0}
-                                onClick={() => setBuyOpen(true)}
-                            >
-                                Buy
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<AddAlertIcon />}
-                                sx={{ px: 4, py: 1.5 }}
-                                onClick={() => setAlertOpen(true)}
-                            >
-                                Create Alert
-                            </Button>
+
+                        <Box data-testid="stock-price-chart">
+                            <StockPriceChart symbol={profile.symbol} />
                         </Box>
-                        <StockPriceChart symbol={profile.symbol} />
                     </>
                 ) : (
                     <Typography color="text.secondary">Select a stock to view details</Typography>
@@ -260,6 +341,18 @@ const StocksPage: React.FC = () => {
                     availableBalance={
                         typeof user.balance === 'string' ? parseFloat(user.balance) : user.balance
                     }
+                />
+            )}
+
+            {profile && sellOpen && ownedQuantity > 0 && (
+                <TradeDialog
+                    open={sellOpen}
+                    onClose={() => setSellOpen(false)}
+                    mode="sell"
+                    symbol={profile.symbol}
+                    name={profile.name}
+                    currentPrice={profile.price}
+                    ownedQuantity={ownedQuantity}
                 />
             )}
 

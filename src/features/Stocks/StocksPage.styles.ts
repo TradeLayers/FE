@@ -55,31 +55,62 @@ export const RightPanel: SxProps<Theme> = {
 
 export const ProfileHeader: SxProps<Theme> = {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 2,
-    mb: 3,
+    mb: 2,
     width: '100%',
+    flexWrap: 'wrap',
 };
 
-export const ProfileDetails: SxProps<Theme> = {
-    width: '100%',
+export const ProfileHeaderInfo: SxProps<Theme> = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    flex: 1,
+    minWidth: 240,
+};
+
+export const ProfileHeaderActions: SxProps<Theme> = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+};
+
+export const PriceBlock: SxProps<Theme> = {
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'flex-end',
+    minWidth: 140,
+};
+
+export const MetricsGrid: SxProps<Theme> = {
+    display: 'grid',
+    gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
     gap: 1.5,
-};
-
-export const DetailRow: SxProps<Theme> = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-};
-
-export const TradeActions: SxProps<Theme> = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 2,
-    mt: 4,
     mb: 2,
+};
+
+export const MetricCard: SxProps<Theme> = {
+    p: 1.5,
+    borderRadius: 1.5,
+    backgroundColor: 'action.hover',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0.5,
+    minHeight: 64,
+};
+
+export const OwnedBanner: SxProps<Theme> = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 2,
+    p: 1.5,
+    mb: 2,
+    borderRadius: 1.5,
+    backgroundColor: 'primary.main',
+    color: 'primary.contrastText',
     flexWrap: 'wrap',
 };

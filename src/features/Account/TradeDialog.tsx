@@ -80,12 +80,7 @@ const TradeDialog: React.FC<Props> = ({
         },
     });
 
-    const confirmDisabled =
-        !validQuantity ||
-        exceedsHoldings ||
-        exceedsBalance ||
-        mutation.isPending ||
-        currentPrice <= 0;
+    const confirmDisabled = !validQuantity || mutation.isPending || currentPrice <= 0;
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
@@ -112,7 +107,7 @@ const TradeDialog: React.FC<Props> = ({
                         type="number"
                         value={quantityInput}
                         onChange={(event) => setQuantityInput(event.target.value)}
-                        inputProps={{ min: 0, step: 'any' }}
+                        inputProps={{ min: 0, step: 'any', 'data-testid': 'trade-quantity' }}
                         fullWidth
                     />
 
@@ -159,6 +154,7 @@ const TradeDialog: React.FC<Props> = ({
                     variant="contained"
                     color={mode === 'buy' ? 'primary' : 'error'}
                     disabled={confirmDisabled}
+                    data-testid="trade-confirm"
                 >
                     Confirm {mode === 'buy' ? 'Buy' : 'Sell'}
                 </Button>

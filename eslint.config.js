@@ -6,7 +6,16 @@ import prettierConfig from 'eslint-config-prettier';
 
 export default [
     {
-        ignores: ['dist/**', 'node_modules/**', '.husky/**', '*.js'],
+        ignores: [
+            'dist/**',
+            'node_modules/**',
+            '.husky/**',
+            '*.js',
+            'e2e/**',
+            'playwright.config.ts',
+            'playwright-report/**',
+            'test-results/**',
+        ],
     },
 
     eslint.configs.recommended,

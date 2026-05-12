@@ -38,7 +38,11 @@ import { addInfo } from '@store/informationSplice';
 import { InfoMessageStatus, type Information } from '@models/informationType';
 import { createOrFetchUser, deleteUser, updateUserFields } from '@api/userApi';
 import { getHoldings, getTransactions, getTransactionsCsv } from '@api/portfolioApi';
+import { getWatchlist } from '@api/watchlistApi';
+import { getAlerts } from '@api/alertsApi';
 import { type HoldingView, type TransactionView } from '@models/portfolioTypes';
+import { type WatchlistItem } from '@models/watchlistTypes';
+import { type PriceAlert } from '@models/alertTypes';
 
 import PortfolioChart from './PortfolioChart';
 import AlertsPanel from './AlertsPanel';
@@ -86,6 +90,16 @@ const AccountPage: React.FC = () => {
     const transactionsQuery = useQuery<TransactionView[]>({
         queryKey: ['transactions'],
         queryFn: () => getTransactions(),
+    });
+
+    const watchlistQuery = useQuery<WatchlistItem[]>({
+        queryKey: ['watchlist'],
+        queryFn: getWatchlist,
+    });
+
+    const alertsQuery = useQuery<PriceAlert[]>({
+        queryKey: ['alerts'],
+        queryFn: getAlerts,
     });
 
     const pushInfoMessage = (message: string, status: InfoMessageStatus): void => {
@@ -172,6 +186,32 @@ const AccountPage: React.FC = () => {
 
     const transactions = useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
     const holdings = useMemo(() => holdingsQuery.data ?? [], [holdingsQuery.data]);
+    const watchlistItems = useMemo(() => watchlistQuery.data ?? [], [watchlistQuery.data]);
+    const alertItems = useMemo(() => alertsQuery.data ?? [], [alertsQuery.data]);
+
+    const holdingsValue = useMemo(
+        () => holdings.reduce((sum, h) => sum + h.quantity * h.currentPrice, 0),
+        [holdings],
+    );
+    const activeAlerts = useMemo(
+        () => alertItems.filter((a) => a.triggeredAt === null).length,
+        [alertItems],
+    );
+    const lastTransactionLabel = useMemo(() => {
+        if (transactions.length === 0) return null;
+        const latest = [...transactions].sort(
+            (a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime(),
+        )[0];
+        return `${latest.transactionType.toUpperCase()} ${latest.symbol}`;
+    }, [transactions]);
+
+    const tabTitle: Record<TabValue, string> = {
+        holdings: 'Holdings',
+        transactions: 'Transaction History',
+        watchlist: 'Watchlist',
+        alerts: 'Price Alerts',
+        account: 'Account Settings',
+    };
 
     const filteredTransactions = useMemo(() => {
         const q = txFilter.trim().toLowerCase();
@@ -193,16 +233,76 @@ const AccountPage: React.FC = () => {
         return map;
     }, [transactions]);
 
+    const summaryCards: Array<{ label: string; value: string; helper?: string }> = [
+        {
+            label: 'Available Balance',
+            value: user.balance !== undefined ? formatCurrency(Number(user.balance)) : '—',
+        },
+        {
+            label: 'Holdings Value',
+            value: formatCurrency(holdingsValue),
+            helper: `${holdings.length} position${holdings.length === 1 ? '' : 's'}`,
+        },
+        {
+            label: 'Watchlist',
+            value: String(watchlistItems.length),
+            helper: watchlistItems.length === 1 ? 'symbol' : 'symbols',
+        },
+        {
+            label: 'Active Alerts',
+            value: String(activeAlerts),
+            helper: alertItems.length > 0 ? `${alertItems.length} total` : 'none configured',
+        },
+        {
+            label: 'Last Activity',
+            value: lastTransactionLabel ?? '—',
+            helper: transactions.length > 0 ? `${transactions.length} transactions` : undefined,
+        },
+    ];
+
     return (
         <Box>
             <Typography variant="h5" component="h2" gutterBottom>
                 Account
             </Typography>
 
+            <Box
+                sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                        xs: 'repeat(2, 1fr)',
+                        sm: 'repeat(3, 1fr)',
+                        md: 'repeat(5, 1fr)',
+                    },
+                    gap: 1.5,
+                    mb: 2.5,
+                }}
+            >
+                {summaryCards.map((card) => (
+                    <Paper
+                        key={card.label}
+                        variant="outlined"
+                        sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 0.25 }}
+                    >
+                        <Typography variant="caption" color="text.secondary">
+                            {card.label}
+                        </Typography>
+                        <Typography variant="h6" fontWeight={700} noWrap>
+                            {card.value}
+                        </Typography>
+                        {card.helper && (
+                            <Typography variant="caption" color="text.secondary">
+                                {card.helper}
+                            </Typography>
+                        )}
+                    </Paper>
+                ))}
+            </Box>
+
             <Tabs
                 value={selectedTab}
                 onChange={handleTabChange}
-                sx={{ mb: 2 }}
+                sx={{ mb: 1 }}
                 variant="scrollable"
                 scrollButtons="auto"
             >
@@ -212,6 +312,10 @@ const AccountPage: React.FC = () => {
                 <Tab label="Alerts" value="alerts" />
                 <Tab label="Account" value="account" />
             </Tabs>
+
+            <Typography variant="subtitle1" sx={{ mb: 2 }} fontWeight={600}>
+                {tabTitle[selectedTab]}
+            </Typography>
 
             {selectedTab === 'holdings' && (
                 <Stack spacing={2}>
@@ -253,7 +357,9 @@ const AccountPage: React.FC = () => {
                                         const value = holding.quantity * holding.currentPrice;
                                         return (
                                             <Fragment key={holding.symbol}>
-                                                <TableRow>
+                                                <TableRow
+                                                    data-testid={`holdings-row-${holding.symbol}`}
+                                                >
                                                     <TableCell>
                                                         <IconButton
                                                             size="small"
@@ -291,6 +397,7 @@ const AccountPage: React.FC = () => {
                                                             variant="outlined"
                                                             color="error"
                                                             onClick={() => setSellTarget(holding)}
+                                                            data-testid="holdings-sell"
                                                         >
                                                             Sell
                                                         </Button>
@@ -354,7 +461,8 @@ const AccountPage: React.FC = () => {
                                     variant="outlined"
                                     startIcon={<FileDownloadIcon />}
                                     onClick={handleExportCsv}
-                                    disabled={transactions.length === 0 || isExportingCsv}
+                                    disabled={isExportingCsv}
+                                    data-testid="export-csv"
                                 >
                                     Export CSV
                                 </Button>

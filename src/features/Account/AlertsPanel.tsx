@@ -77,7 +77,7 @@ const AlertsPanel: React.FC = () => {
                 </TableHead>
                 <TableBody>
                     {data.map((item) => (
-                        <TableRow key={item.id}>
+                        <TableRow key={item.id} data-testid="alert-row">
                             <TableCell>
                                 <Typography fontWeight={600}>{item.symbol}</Typography>
                                 <Typography variant="body2" color="text.secondary">
@@ -108,6 +108,7 @@ const AlertsPanel: React.FC = () => {
                                     onClick={() => deleteMutation.mutate(item.id)}
                                     disabled={deleteMutation.isPending}
                                     aria-label={`Delete ${item.symbol} alert`}
+                                    data-testid="alert-delete"
                                 >
                                     <DeleteOutlineIcon fontSize="small" />
                                 </IconButton>
