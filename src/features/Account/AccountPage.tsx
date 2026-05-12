@@ -357,7 +357,7 @@ const AccountPage: React.FC = () => {
                                         const value = holding.quantity * holding.currentPrice;
                                         return (
                                             <Fragment key={holding.symbol}>
-                                                <TableRow>
+                                                <TableRow data-testid={`holdings-row-${holding.symbol}`}>
                                                     <TableCell>
                                                         <IconButton
                                                             size="small"
@@ -395,6 +395,7 @@ const AccountPage: React.FC = () => {
                                                             variant="outlined"
                                                             color="error"
                                                             onClick={() => setSellTarget(holding)}
+                                                            data-testid="holdings-sell"
                                                         >
                                                             Sell
                                                         </Button>
@@ -458,7 +459,8 @@ const AccountPage: React.FC = () => {
                                     variant="outlined"
                                     startIcon={<FileDownloadIcon />}
                                     onClick={handleExportCsv}
-                                    disabled={transactions.length === 0 || isExportingCsv}
+                                    disabled={isExportingCsv}
+                                    data-testid="export-csv"
                                 >
                                     Export CSV
                                 </Button>

@@ -70,7 +70,6 @@ const StocksPage: React.FC = () => {
             const res = await authorizedApi.get<StockListItem[]>('/stocks');
             return res.data;
         },
-        enabled: loggedIn,
     });
 
     const { data: searchResults } = useQuery<StockSearchResult[]>({
@@ -81,7 +80,7 @@ const StocksPage: React.FC = () => {
             );
             return res.data;
         },
-        enabled: loggedIn && debouncedSearch.length > 0,
+        enabled: debouncedSearch.length > 0,
     });
 
     const { data: profile } = useQuery<StockProfile>({
@@ -90,7 +89,7 @@ const StocksPage: React.FC = () => {
             const res = await authorizedApi.get<StockProfile>(`/stocks/profile/${selectedSymbol}`);
             return res.data;
         },
-        enabled: loggedIn && !!selectedSymbol,
+        enabled: !!selectedSymbol,
     });
 
     const { data: watchlist } = useQuery<WatchlistItem[]>({

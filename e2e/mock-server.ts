@@ -181,6 +181,47 @@ const recomputeHolding = (symbol: string): void => {
     else state.holdings.push(updated);
 };
 
+const toTransactionView = (t: MockTransaction, stockName?: string) => ({
+    id: t.id,
+    symbol: t.symbol,
+    name: stockName ?? t.symbol,
+    price: t.price,
+    quantity: t.quantity,
+    transactionDate: t.createdAt,
+    transactionType: t.type === 'BUY' ? 'bought' : 'sold',
+});
+
+const toHoldingView = (h: MockHolding, stockName?: string) => ({
+    stockId: h.symbol,
+    symbol: h.symbol,
+    name: stockName ?? h.symbol,
+    quantity: h.quantity,
+    currentPrice: h.currentPrice,
+});
+
+const toAlertView = (a: MockAlert, stockName?: string, currentPrice?: number) => ({
+    id: a.id,
+    symbol: a.symbol,
+    name: stockName ?? a.symbol,
+    thresholdPrice: a.threshold,
+    direction: a.direction,
+    currentPrice: currentPrice ?? 0,
+    triggeredAt: a.triggeredAt,
+    createdAt: a.createdAt,
+});
+
+const toWatchlistView = (w: MockWatchlist, stockName?: string, currentPrice?: number) => ({
+    symbol: w.symbol,
+    name: stockName ?? w.symbol,
+    currentPrice: currentPrice ?? 0,
+    thresholdPrice: w.threshold,
+});
+
+const stockMeta = (symbol: string): { name?: string; price?: number } => {
+    const s = state.stocks.find((x) => x.symbol === symbol);
+    return { name: s?.name, price: s?.price };
+};
+
 const requireAuth = (req: IncomingMessage, res: ServerResponse): boolean => {
     const auth = req.headers['authorization'];
     if (!auth || !auth.startsWith('Bearer ')) {
@@ -250,7 +291,7 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         const q = (url.searchParams.get('q') ?? '').toUpperCase();
         const matches = state.stocks
             .filter((s) => s.symbol.includes(q) || s.name.toUpperCase().includes(q))
-            .map((s) => ({ symbol: s.symbol, name: s.name, exchange: s.exchange }));
+            .map((s) => ({ symbol: s.symbol, description: s.name, type: 'Common Stock' }));
         return json(res, 200, matches);
     }
 
@@ -297,11 +338,15 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         return json(res, 204, {});
     }
 
-    if (path === '/portfolio/holdings' && method === 'GET') return json(res, 200, state.holdings);
+    if (path === '/portfolio/holdings' && method === 'GET') {
+        return json(
+            res,
+            200,
+            state.holdings.map((h) => toHoldingView(h, stockMeta(h.symbol).name)),
+        );
+    }
 
     if (path === '/portfolio/transactions' && method === 'GET') {
-        const page = parseInt(url.searchParams.get('page') ?? '0', 10);
-        const size = parseInt(url.searchParams.get('size') ?? '20', 10);
         const sort = url.searchParams.get('sort') ?? 'createdAt:desc';
         const all = [...state.transactions];
         all.sort((a, b) => {
@@ -311,13 +356,11 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
             const cmp = String(av) < String(bv) ? -1 : String(av) > String(bv) ? 1 : 0;
             return dir === 'asc' ? cmp : -cmp;
         });
-        const start = page * size;
-        return json(res, 200, {
-            items: all.slice(start, start + size),
-            total: all.length,
-            page,
-            size,
-        });
+        return json(
+            res,
+            200,
+            all.map((t) => toTransactionView(t, stockMeta(t.symbol).name)),
+        );
     }
 
     if (path === '/portfolio/transactions.csv' && method === 'GET') {
@@ -331,15 +374,28 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
     }
 
     if (path === '/portfolio/history' && method === 'GET') {
-        const interval = url.searchParams.get('interval') ?? '1M';
-        const POINTS_BY_INTERVAL: Record<string, number> = { '1D': 24, '1W': 7, '1M': 30 };
-        const points = POINTS_BY_INTERVAL[interval] ?? 365;
+        const interval = url.searchParams.get('interval') ?? 'all';
+        const POINTS_BY_INTERVAL: Record<string, number> = {
+            daily: 24,
+            weekly: 7,
+            monthly: 30,
+            all: 60,
+        };
+        const points = POINTS_BY_INTERVAL[interval] ?? 30;
         const now = Date.now();
-        const data = Array.from({ length: points }, (_, i) => ({
-            timestamp: new Date(now - (points - i) * 86400000).toISOString(),
+        const seriesPoints = Array.from({ length: points }, (_, i) => ({
+            date: new Date(now - (points - i) * 86400000).toISOString(),
+            investedCapital: 10000,
+        }));
+        const seriesMarket = seriesPoints.map((p, i) => ({
+            date: p.date,
             value: 10000 + Math.sin(i / 4) * 500,
         }));
-        return json(res, 200, data);
+        return json(res, 200, {
+            points: seriesPoints,
+            marketValue: seriesMarket,
+            currentValue: seriesMarket[seriesMarket.length - 1]?.value ?? 10000,
+        });
     }
 
     if (path === '/portfolio/buy' && method === 'POST') {
@@ -366,7 +422,10 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         };
         state.transactions.push(tx);
         recomputeHolding(body.symbol);
-        return json(res, 200, tx);
+        return json(res, 200, {
+            transaction: toTransactionView(tx, stock.name),
+            balance: state.user.balance,
+        });
     }
 
     if (path === '/portfolio/sell' && method === 'POST') {
@@ -396,25 +455,41 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         };
         state.transactions.push(tx);
         recomputeHolding(body.symbol);
-        return json(res, 200, tx);
+        return json(res, 200, {
+            transaction: toTransactionView(tx, stock.name),
+            balance: state.user.balance,
+        });
     }
 
-    if (path === '/alerts' && method === 'GET') return json(res, 200, state.alerts);
+    if (path === '/alerts' && method === 'GET') {
+        return json(
+            res,
+            200,
+            state.alerts.map((a) => {
+                const meta = stockMeta(a.symbol);
+                return toAlertView(a, meta.name, meta.price);
+            }),
+        );
+    }
     if (path === '/alerts' && method === 'POST') {
-        const body = JSON.parse((await readBody(req)) || '{}') as Partial<MockAlert>;
-        if (!body.symbol || !body.direction || !body.threshold || body.threshold <= 0) {
+        const body = JSON.parse((await readBody(req)) || '{}') as Partial<MockAlert> & {
+            thresholdPrice?: number;
+        };
+        const threshold = body.threshold ?? body.thresholdPrice;
+        if (!body.symbol || !body.direction || !threshold || threshold <= 0) {
             return json(res, 400, { error: 'Invalid alert' });
         }
         const alert: MockAlert = {
             id: `alert-${state.alerts.length + 1}`,
             symbol: body.symbol,
             direction: body.direction,
-            threshold: body.threshold,
+            threshold,
             triggeredAt: null,
             createdAt: new Date().toISOString(),
         };
         state.alerts.push(alert);
-        return json(res, 201, alert);
+        const meta = stockMeta(alert.symbol);
+        return json(res, 201, toAlertView(alert, meta.name, meta.price));
     }
     if (path.startsWith('/alerts/') && method === 'DELETE') {
         const id = path.split('/').pop();
@@ -430,7 +505,16 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         return json(res, 200, state.alerts[idx]);
     }
 
-    if (path === '/watchlist' && method === 'GET') return json(res, 200, state.watchlist);
+    if (path === '/watchlist' && method === 'GET') {
+        return json(
+            res,
+            200,
+            state.watchlist.map((w) => {
+                const meta = stockMeta(w.symbol);
+                return toWatchlistView(w, meta.name, meta.price);
+            }),
+        );
+    }
     if (path === '/watchlist' && method === 'POST') {
         const body = JSON.parse((await readBody(req)) || '{}') as { symbol: string };
         if (!state.watchlist.find((w) => w.symbol === body.symbol)) {

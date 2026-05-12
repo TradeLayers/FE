@@ -13,7 +13,7 @@ const MainTheme = createTheme({
         },
         text: {
             primary: '#e0e0e0',
-            secondary: '#8a919e',
+            secondary: '#c0c5cf',
         },
         divider: 'rgba(255, 255, 255, 0.08)',
         success: { main: '#00c853' },

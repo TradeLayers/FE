@@ -36,8 +36,9 @@ const isMainThemeMode = (value: string | null): value is MainThemeMode =>
 
 const getInitialThemeMode = (): MainThemeMode => {
     const savedMode = window.localStorage.getItem(THEME_STORAGE_KEY);
-
-    return isMainThemeMode(savedMode) ? savedMode : 'dark';
+    if (isMainThemeMode(savedMode)) return savedMode;
+    window.localStorage.setItem(THEME_STORAGE_KEY, 'dark');
+    return 'dark';
 };
 
 const RequireUser: React.FC<{ children: React.ReactNode }> = ({ children }) => {

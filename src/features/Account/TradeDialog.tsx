@@ -80,12 +80,7 @@ const TradeDialog: React.FC<Props> = ({
         },
     });
 
-    const confirmDisabled =
-        !validQuantity ||
-        exceedsHoldings ||
-        exceedsBalance ||
-        mutation.isPending ||
-        currentPrice <= 0;
+    const confirmDisabled = !validQuantity || mutation.isPending || currentPrice <= 0;
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
