@@ -1,4 +1,14 @@
 import { createServer, type IncomingMessage, type ServerResponse, type Server } from 'http';
+import type {
+    HoldingView,
+    PortfolioHistoryResponse,
+    PortfolioInterval,
+    TradeResult,
+    TransactionView,
+} from '../src/models/portfolioTypes';
+import type { PriceAlert } from '../src/models/alertTypes';
+import type { WatchlistItem } from '../src/models/watchlistTypes';
+import type { StockSearchResult } from '../src/models/stockTypes';
 
 export type MockTransaction = {
     id: string;
@@ -181,45 +191,49 @@ const recomputeHolding = (symbol: string): void => {
     else state.holdings.push(updated);
 };
 
-const toTransactionView = (t: MockTransaction, stockName?: string) => ({
+const findStock = (symbol: string): MockStock | undefined =>
+    state.stocks.find((s) => s.symbol === symbol);
+
+const toTransactionView = (t: MockTransaction): TransactionView => ({
     id: t.id,
     symbol: t.symbol,
-    name: stockName ?? t.symbol,
+    name: findStock(t.symbol)?.name ?? t.symbol,
     price: t.price,
     quantity: t.quantity,
     transactionDate: t.createdAt,
     transactionType: t.type === 'BUY' ? 'bought' : 'sold',
 });
 
-const toHoldingView = (h: MockHolding, stockName?: string) => ({
+const toHoldingView = (h: MockHolding): HoldingView => ({
     stockId: h.symbol,
     symbol: h.symbol,
-    name: stockName ?? h.symbol,
+    name: findStock(h.symbol)?.name ?? h.symbol,
     quantity: h.quantity,
     currentPrice: h.currentPrice,
 });
 
-const toAlertView = (a: MockAlert, stockName?: string, currentPrice?: number) => ({
-    id: a.id,
-    symbol: a.symbol,
-    name: stockName ?? a.symbol,
-    thresholdPrice: a.threshold,
-    direction: a.direction,
-    currentPrice: currentPrice ?? 0,
-    triggeredAt: a.triggeredAt,
-    createdAt: a.createdAt,
-});
+const toAlertView = (a: MockAlert): PriceAlert => {
+    const stock = findStock(a.symbol);
+    return {
+        id: a.id,
+        symbol: a.symbol,
+        name: stock?.name ?? a.symbol,
+        thresholdPrice: a.threshold,
+        direction: a.direction,
+        currentPrice: stock?.price ?? 0,
+        triggeredAt: a.triggeredAt,
+        createdAt: a.createdAt,
+    };
+};
 
-const toWatchlistView = (w: MockWatchlist, stockName?: string, currentPrice?: number) => ({
-    symbol: w.symbol,
-    name: stockName ?? w.symbol,
-    currentPrice: currentPrice ?? 0,
-    thresholdPrice: w.threshold,
-});
-
-const stockMeta = (symbol: string): { name?: string; price?: number } => {
-    const s = state.stocks.find((x) => x.symbol === symbol);
-    return { name: s?.name, price: s?.price };
+const toWatchlistView = (w: MockWatchlist): WatchlistItem => {
+    const stock = findStock(w.symbol);
+    return {
+        symbol: w.symbol,
+        name: stock?.name ?? w.symbol,
+        currentPrice: stock?.price ?? 0,
+        thresholdPrice: w.threshold,
+    };
 };
 
 const requireAuth = (req: IncomingMessage, res: ServerResponse): boolean => {
@@ -289,7 +303,7 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
 
     if (path === '/stocks/search' && method === 'GET') {
         const q = (url.searchParams.get('q') ?? '').toUpperCase();
-        const matches = state.stocks
+        const matches: StockSearchResult[] = state.stocks
             .filter((s) => s.symbol.includes(q) || s.name.toUpperCase().includes(q))
             .map((s) => ({ symbol: s.symbol, description: s.name, type: 'Common Stock' }));
         return json(res, 200, matches);
@@ -339,11 +353,7 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
     }
 
     if (path === '/portfolio/holdings' && method === 'GET') {
-        return json(
-            res,
-            200,
-            state.holdings.map((h) => toHoldingView(h, stockMeta(h.symbol).name)),
-        );
+        return json(res, 200, state.holdings.map(toHoldingView));
     }
 
     if (path === '/portfolio/transactions' && method === 'GET') {
@@ -356,11 +366,7 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
             const cmp = String(av) < String(bv) ? -1 : String(av) > String(bv) ? 1 : 0;
             return dir === 'asc' ? cmp : -cmp;
         });
-        return json(
-            res,
-            200,
-            all.map((t) => toTransactionView(t, stockMeta(t.symbol).name)),
-        );
+        return json(res, 200, all.map(toTransactionView));
     }
 
     if (path === '/portfolio/transactions.csv' && method === 'GET') {
@@ -374,13 +380,13 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
     }
 
     if (path === '/portfolio/history' && method === 'GET') {
-        const interval = url.searchParams.get('interval') ?? 'all';
-        const POINTS_BY_INTERVAL: Record<string, number> = {
+        const POINTS_BY_INTERVAL: Record<PortfolioInterval, number> = {
             daily: 24,
             weekly: 7,
             monthly: 30,
             all: 60,
         };
+        const interval = (url.searchParams.get('interval') ?? 'all') as PortfolioInterval;
         const points = POINTS_BY_INTERVAL[interval] ?? 30;
         const now = Date.now();
         const seriesPoints = Array.from({ length: points }, (_, i) => ({
@@ -391,11 +397,12 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
             date: p.date,
             value: 10000 + Math.sin(i / 4) * 500,
         }));
-        return json(res, 200, {
+        const body: PortfolioHistoryResponse = {
             points: seriesPoints,
             marketValue: seriesMarket,
             currentValue: seriesMarket[seriesMarket.length - 1]?.value ?? 10000,
-        });
+        };
+        return json(res, 200, body);
     }
 
     if (path === '/portfolio/buy' && method === 'POST') {
@@ -422,10 +429,11 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         };
         state.transactions.push(tx);
         recomputeHolding(body.symbol);
-        return json(res, 200, {
-            transaction: toTransactionView(tx, stock.name),
+        const result: TradeResult = {
+            transaction: toTransactionView(tx),
             balance: state.user.balance,
-        });
+        };
+        return json(res, 200, result);
     }
 
     if (path === '/portfolio/sell' && method === 'POST') {
@@ -455,21 +463,15 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         };
         state.transactions.push(tx);
         recomputeHolding(body.symbol);
-        return json(res, 200, {
-            transaction: toTransactionView(tx, stock.name),
+        const result: TradeResult = {
+            transaction: toTransactionView(tx),
             balance: state.user.balance,
-        });
+        };
+        return json(res, 200, result);
     }
 
     if (path === '/alerts' && method === 'GET') {
-        return json(
-            res,
-            200,
-            state.alerts.map((a) => {
-                const meta = stockMeta(a.symbol);
-                return toAlertView(a, meta.name, meta.price);
-            }),
-        );
+        return json(res, 200, state.alerts.map(toAlertView));
     }
     if (path === '/alerts' && method === 'POST') {
         const body = JSON.parse((await readBody(req)) || '{}') as Partial<MockAlert> & {
@@ -488,8 +490,7 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
             createdAt: new Date().toISOString(),
         };
         state.alerts.push(alert);
-        const meta = stockMeta(alert.symbol);
-        return json(res, 201, toAlertView(alert, meta.name, meta.price));
+        return json(res, 201, toAlertView(alert));
     }
     if (path.startsWith('/alerts/') && method === 'DELETE') {
         const id = path.split('/').pop();
@@ -506,14 +507,7 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
     }
 
     if (path === '/watchlist' && method === 'GET') {
-        return json(
-            res,
-            200,
-            state.watchlist.map((w) => {
-                const meta = stockMeta(w.symbol);
-                return toWatchlistView(w, meta.name, meta.price);
-            }),
-        );
+        return json(res, 200, state.watchlist.map(toWatchlistView));
     }
     if (path === '/watchlist' && method === 'POST') {
         const body = JSON.parse((await readBody(req)) || '{}') as { symbol: string };

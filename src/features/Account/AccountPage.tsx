@@ -357,7 +357,9 @@ const AccountPage: React.FC = () => {
                                         const value = holding.quantity * holding.currentPrice;
                                         return (
                                             <Fragment key={holding.symbol}>
-                                                <TableRow data-testid={`holdings-row-${holding.symbol}`}>
+                                                <TableRow
+                                                    data-testid={`holdings-row-${holding.symbol}`}
+                                                >
                                                     <TableCell>
                                                         <IconButton
                                                             size="small"
