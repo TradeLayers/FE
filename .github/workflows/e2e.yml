@@ -22,7 +22,7 @@ jobs:
             - name: Install dependencies
               run: npm ci
             - name: Install Playwright browsers
-              run: npx playwright install --with-deps chromium
+              run: npx playwright install --with-deps chromium webkit
             - name: Run Playwright tests (excluding visual regression)
               run: npx playwright test --grep-invert "Visual regression"
             - name: Upload Playwright report
