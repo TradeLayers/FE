@@ -7,6 +7,7 @@ import {
     Button,
     IconButton,
     Paper,
+    Stack,
     Table,
     TableBody,
     TableCell,
@@ -151,81 +152,180 @@ const WatchlistPanel: React.FC = () => {
     }
 
     return (
-        <TableContainer component={Paper} variant="outlined">
-            <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Symbol</TableCell>
-                        <TableCell>Company</TableCell>
-                        <TableCell align="right">Price</TableCell>
-                        <TableCell align="right">Threshold</TableCell>
-                        <TableCell align="right" />
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {data.map((item) => (
-                        <TableRow key={item.symbol} data-testid={`watchlist-row-${item.symbol}`}>
-                            <TableCell>{item.symbol}</TableCell>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell align="right">
-                                {item.currentPrice > 0 ? formatCurrency(item.currentPrice) : '—'}
-                            </TableCell>
-                            <TableCell align="right">
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        justifyContent: 'flex-end',
-                                        alignItems: 'center',
-                                        gap: 1,
-                                    }}
+        <>
+            {/* Desktop table view */}
+            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <TableContainer component={Paper} variant="outlined">
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Symbol</TableCell>
+                                <TableCell>Company</TableCell>
+                                <TableCell align="right">Price</TableCell>
+                                <TableCell align="right">Threshold</TableCell>
+                                <TableCell align="right" />
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {data.map((item) => (
+                                <TableRow
+                                    key={item.symbol}
+                                    data-testid={`watchlist-row-${item.symbol}`}
                                 >
-                                    <TextField
-                                        size="small"
-                                        type="number"
-                                        value={
-                                            thresholdInputs[item.symbol] ??
-                                            thresholdInputDefaults[item.symbol] ??
-                                            ''
-                                        }
-                                        onChange={(event) =>
-                                            handleThresholdInputChange(
-                                                item.symbol,
-                                                event.target.value,
-                                            )
-                                        }
-                                        inputProps={{ min: 0, step: 0.01 }}
-                                        placeholder="0.00"
-                                        sx={{ width: 120 }}
-                                    />
-                                    <Button
-                                        size="small"
-                                        variant="outlined"
-                                        onClick={() => handleThresholdSave(item.symbol)}
-                                        disabled={
-                                            updateThresholdMutation.isPending ||
-                                            isThresholdSaveDisabled(item.symbol)
-                                        }
-                                    >
-                                        Save
-                                    </Button>
-                                </Box>
-                            </TableCell>
-                            <TableCell align="right">
-                                <IconButton
-                                    size="small"
-                                    onClick={() => removeMutation.mutate(item.symbol)}
-                                    disabled={removeMutation.isPending}
-                                    aria-label={`Remove ${item.symbol}`}
-                                    data-testid="watchlist-remove"
-                                >
-                                    <DeleteOutlineIcon fontSize="small" />
-                                </IconButton>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+                                    <TableCell>{item.symbol}</TableCell>
+                                    <TableCell>{item.name}</TableCell>
+                                    <TableCell align="right">
+                                        {item.currentPrice > 0
+                                            ? formatCurrency(item.currentPrice)
+                                            : '—'}
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                justifyContent: 'flex-end',
+                                                alignItems: 'center',
+                                                gap: 1,
+                                            }}
+                                        >
+                                            <TextField
+                                                size="small"
+                                                type="number"
+                                                value={
+                                                    thresholdInputs[item.symbol] ??
+                                                    thresholdInputDefaults[item.symbol] ??
+                                                    ''
+                                                }
+                                                onChange={(event) =>
+                                                    handleThresholdInputChange(
+                                                        item.symbol,
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                inputProps={{ min: 0, step: 0.01 }}
+                                                placeholder="0.00"
+                                                sx={{ width: 120 }}
+                                            />
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleThresholdSave(item.symbol)}
+                                                disabled={
+                                                    updateThresholdMutation.isPending ||
+                                                    isThresholdSaveDisabled(item.symbol)
+                                                }
+                                            >
+                                                Save
+                                            </Button>
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => removeMutation.mutate(item.symbol)}
+                                            disabled={removeMutation.isPending}
+                                            aria-label={`Remove ${item.symbol}`}
+                                            data-testid="watchlist-remove"
+                                        >
+                                            <DeleteOutlineIcon fontSize="small" />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
+
+            {/* Mobile card view */}
+            <Stack sx={{ display: { xs: 'flex', md: 'none' }, gap: 1.5 }}>
+                {data.map((item) => (
+                    <Paper
+                        key={item.symbol}
+                        variant="outlined"
+                        sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}
+                        data-testid={`watchlist-row-${item.symbol}`}
+                    >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography fontWeight={700}>{item.symbol}</Typography>
+                                <Typography variant="body2" color="text.secondary" noWrap>
+                                    {item.name}
+                                </Typography>
+                            </Box>
+                            <IconButton
+                                size="small"
+                                onClick={() => removeMutation.mutate(item.symbol)}
+                                disabled={removeMutation.isPending}
+                                aria-label={`Remove ${item.symbol}`}
+                                data-testid="watchlist-remove"
+                                sx={{ mt: -0.5 }}
+                            >
+                                <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                        </Box>
+
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: 2,
+                            }}
+                        >
+                            <Box>
+                                <Typography variant="caption" color="text.secondary">
+                                    Current Price
+                                </Typography>
+                                <Typography fontWeight={600}>
+                                    {item.currentPrice > 0 ? formatCurrency(item.currentPrice) : '—'}
+                                </Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" color="text.secondary">
+                                    Threshold
+                                </Typography>
+                                <Typography fontWeight={600}>
+                                    {thresholdBySymbol[item.symbol] !== null
+                                        ? formatCurrency(thresholdBySymbol[item.symbol] ?? 0)
+                                        : '—'}
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <TextField
+                                size="small"
+                                type="number"
+                                label="New threshold"
+                                value={
+                                    thresholdInputs[item.symbol] ??
+                                    thresholdInputDefaults[item.symbol] ??
+                                    ''
+                                }
+                                onChange={(event) =>
+                                    handleThresholdInputChange(item.symbol, event.target.value)
+                                }
+                                inputProps={{ min: 0, step: 0.01 }}
+                                placeholder="0.00"
+                                sx={{ flex: 1 }}
+                            />
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => handleThresholdSave(item.symbol)}
+                                disabled={
+                                    updateThresholdMutation.isPending ||
+                                    isThresholdSaveDisabled(item.symbol)
+                                }
+                                sx={{ whiteSpace: 'nowrap' }}
+                            >
+                                Save
+                            </Button>
+                        </Box>
+                    </Paper>
+                ))}
+            </Stack>
+        </>
     );
 };
 
