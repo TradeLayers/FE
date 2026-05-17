@@ -16,8 +16,8 @@ It is built using:
 
 Before running this project, make sure you have:
 
-- **Node.js** – Version 24.x or higher
-- **npm** – Version 10.x or higher
+-- **Node.js** – Version 18.x or higher (LTS recommended)
+-- **npm** – Version 8.x or higher
 
 You can check your versions:
 
