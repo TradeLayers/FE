@@ -3,6 +3,7 @@ import {
     Alert,
     Box,
     Button,
+    Chip,
     Collapse,
     Dialog,
     DialogActions,
@@ -337,111 +338,267 @@ const AccountPage: React.FC = () => {
                     )}
 
                     {holdings.length > 0 && (
-                        <TableContainer component={Paper} variant="outlined">
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell width={48} />
-                                        <TableCell width={40} />
-                                        <TableCell>Symbol</TableCell>
-                                        <TableCell>Company</TableCell>
-                                        <TableCell align="right">Quantity</TableCell>
-                                        <TableCell align="right">Price</TableCell>
-                                        <TableCell align="right">Value</TableCell>
-                                        <TableCell align="right" />
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {holdings.map((holding) => {
-                                        const expanded = expandedSymbol === holding.symbol;
-                                        const value = holding.quantity * holding.currentPrice;
-                                        return (
-                                            <Fragment key={holding.symbol}>
-                                                <TableRow
-                                                    data-testid={`holdings-row-${holding.symbol}`}
+                        <>
+                            {/* Desktop table view */}
+                            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                                <TableContainer component={Paper} variant="outlined">
+                                    <Table size="small">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell width={48} />
+                                                <TableCell width={40} />
+                                                <TableCell>Symbol</TableCell>
+                                                <TableCell>Company</TableCell>
+                                                <TableCell align="right">Quantity</TableCell>
+                                                <TableCell align="right">Price</TableCell>
+                                                <TableCell align="right">Value</TableCell>
+                                                <TableCell align="right" />
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {holdings.map((holding) => {
+                                                const expanded = expandedSymbol === holding.symbol;
+                                                const value = holding.quantity * holding.currentPrice;
+                                                return (
+                                                    <Fragment key={holding.symbol}>
+                                                        <TableRow
+                                                            data-testid={`holdings-row-${holding.symbol}`}
+                                                        >
+                                                            <TableCell>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() =>
+                                                                        toggleExpand(holding.symbol)
+                                                                    }
+                                                                    aria-label={`Expand ${holding.symbol}`}
+                                                                >
+                                                                    {expanded ? (
+                                                                        <KeyboardArrowUpIcon fontSize="small" />
+                                                                    ) : (
+                                                                        <KeyboardArrowDownIcon fontSize="small" />
+                                                                    )}
+                                                                </IconButton>
+                                                            </TableCell>
+                                                            <TableCell width={40}>
+                                                                <HoldingLogo symbol={holding.symbol} />
+                                                            </TableCell>
+                                                            <TableCell>{holding.symbol}</TableCell>
+                                                            <TableCell>{holding.name}</TableCell>
+                                                            <TableCell align="right">
+                                                                {formatQuantity(holding.quantity)}
+                                                            </TableCell>
+                                                            <TableCell align="right">
+                                                                {holding.currentPrice > 0
+                                                                    ? formatCurrency(holding.currentPrice)
+                                                                    : '—'}
+                                                            </TableCell>
+                                                            <TableCell align="right">
+                                                                {formatCurrency(value)}
+                                                            </TableCell>
+                                                            <TableCell align="right">
+                                                                <Button
+                                                                    size="small"
+                                                                    variant="outlined"
+                                                                    color="error"
+                                                                    onClick={() => setSellTarget(holding)}
+                                                                    data-testid="holdings-sell"
+                                                                >
+                                                                    Sell
+                                                                </Button>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                        <TableRow>
+                                                            <TableCell
+                                                                colSpan={8}
+                                                                sx={{
+                                                                    py: 0,
+                                                                    borderBottom: expanded
+                                                                        ? undefined
+                                                                        : 'none',
+                                                                }}
+                                                            >
+                                                                <Collapse
+                                                                    in={expanded}
+                                                                    timeout="auto"
+                                                                    unmountOnExit
+                                                                >
+                                                                    <Box sx={{ py: 2 }}>
+                                                                        <StockStatsCard
+                                                                            symbol={holding.symbol}
+                                                                            name={holding.name}
+                                                                            ownedQuantity={holding.quantity}
+                                                                            currentPrice={
+                                                                                holding.currentPrice
+                                                                            }
+                                                                            transactions={
+                                                                                transactionsBySymbol[
+                                                                                    holding.symbol
+                                                                                ] ?? []
+                                                                            }
+                                                                        />
+                                                                    </Box>
+                                                                </Collapse>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    </Fragment>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
+
+                            {/* Mobile card view */}
+                            <Stack sx={{ display: { xs: 'flex', md: 'none' }, gap: 1.5 }}>
+                                {holdings.map((holding) => {
+                                    const expanded = expandedSymbol === holding.symbol;
+                                    const value = holding.quantity * holding.currentPrice;
+                                    return (
+                                        <Fragment key={holding.symbol}>
+                                            <Paper
+                                                variant="outlined"
+                                                sx={{
+                                                    p: 2,
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: 1.5,
+                                                    data: `holdings-row-${holding.symbol}`,
+                                                }}
+                                                data-testid={`holdings-row-${holding.symbol}`}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'flex-start',
+                                                        gap: 2,
+                                                    }}
                                                 >
-                                                    <TableCell>
-                                                        <IconButton
-                                                            size="small"
-                                                            onClick={() =>
-                                                                toggleExpand(holding.symbol)
-                                                            }
-                                                            aria-label={`Expand ${holding.symbol}`}
-                                                        >
-                                                            {expanded ? (
-                                                                <KeyboardArrowUpIcon fontSize="small" />
-                                                            ) : (
-                                                                <KeyboardArrowDownIcon fontSize="small" />
-                                                            )}
-                                                        </IconButton>
-                                                    </TableCell>
-                                                    <TableCell width={40}>
+                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                                         <HoldingLogo symbol={holding.symbol} />
-                                                    </TableCell>
-                                                    <TableCell>{holding.symbol}</TableCell>
-                                                    <TableCell>{holding.name}</TableCell>
-                                                    <TableCell align="right">
-                                                        {formatQuantity(holding.quantity)}
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        {holding.currentPrice > 0
-                                                            ? formatCurrency(holding.currentPrice)
-                                                            : '—'}
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        {formatCurrency(value)}
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        <Button
-                                                            size="small"
-                                                            variant="outlined"
-                                                            color="error"
-                                                            onClick={() => setSellTarget(holding)}
-                                                            data-testid="holdings-sell"
+                                                        <Box>
+                                                            <Typography fontWeight={700}>
+                                                                {holding.symbol}
+                                                            </Typography>
+                                                            <Typography
+                                                                variant="body2"
+                                                                color="text.secondary"
+                                                                noWrap
+                                                            >
+                                                                {holding.name}
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => toggleExpand(holding.symbol)}
+                                                        aria-label={`Expand ${holding.symbol}`}
+                                                        sx={{ mt: -0.5 }}
+                                                    >
+                                                        {expanded ? (
+                                                            <KeyboardArrowUpIcon fontSize="small" />
+                                                        ) : (
+                                                            <KeyboardArrowDownIcon fontSize="small" />
+                                                        )}
+                                                    </IconButton>
+                                                </Box>
+
+                                                <Box
+                                                    sx={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: '1fr 1fr',
+                                                        gap: 2,
+                                                    }}
+                                                >
+                                                    <Box>
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
                                                         >
-                                                            Sell
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                                <TableRow>
-                                                    <TableCell
-                                                        colSpan={8}
+                                                            Quantity
+                                                        </Typography>
+                                                        <Typography fontWeight={600}>
+                                                            {formatQuantity(holding.quantity)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box>
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                        >
+                                                            Price
+                                                        </Typography>
+                                                        <Typography fontWeight={600}>
+                                                            {holding.currentPrice > 0
+                                                                ? formatCurrency(holding.currentPrice)
+                                                                : '—'}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        pt: 1,
+                                                        borderTop: 1,
+                                                        borderColor: 'divider',
+                                                    }}
+                                                >
+                                                    <Box>
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                        >
+                                                            Total Value
+                                                        </Typography>
+                                                        <Typography
+                                                            variant="h6"
+                                                            fontWeight={700}
+                                                            color="primary"
+                                                        >
+                                                            {formatCurrency(value)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
+                                                        color="error"
+                                                        onClick={() => setSellTarget(holding)}
+                                                        data-testid="holdings-sell"
+                                                    >
+                                                        Sell
+                                                    </Button>
+                                                </Box>
+
+                                                <Collapse in={expanded} timeout="auto" unmountOnExit>
+                                                    <Box
                                                         sx={{
-                                                            py: 0,
-                                                            borderBottom: expanded
-                                                                ? undefined
-                                                                : 'none',
+                                                            pt: 1.5,
+                                                            borderTop: 1,
+                                                            borderColor: 'divider',
                                                         }}
                                                     >
-                                                        <Collapse
-                                                            in={expanded}
-                                                            timeout="auto"
-                                                            unmountOnExit
-                                                        >
-                                                            <Box sx={{ py: 2 }}>
-                                                                <StockStatsCard
-                                                                    symbol={holding.symbol}
-                                                                    name={holding.name}
-                                                                    ownedQuantity={holding.quantity}
-                                                                    currentPrice={
-                                                                        holding.currentPrice
-                                                                    }
-                                                                    transactions={
-                                                                        transactionsBySymbol[
-                                                                            holding.symbol
-                                                                        ] ?? []
-                                                                    }
-                                                                />
-                                                            </Box>
-                                                        </Collapse>
-                                                    </TableCell>
-                                                </TableRow>
-                                            </Fragment>
-                                        );
-                                    })}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                                                        <StockStatsCard
+                                                            symbol={holding.symbol}
+                                                            name={holding.name}
+                                                            ownedQuantity={holding.quantity}
+                                                            currentPrice={holding.currentPrice}
+                                                            transactions={
+                                                                transactionsBySymbol[
+                                                                    holding.symbol
+                                                                ] ?? []
+                                                            }
+                                                        />
+                                                    </Box>
+                                                </Collapse>
+                                            </Paper>
+                                        </Fragment>
+                                    );
+                                })}
+                            </Stack>
+                        </>
                     )}
                 </Stack>
             )}
@@ -504,48 +661,118 @@ const AccountPage: React.FC = () => {
                     )}
 
                     {filteredTransactions.length > 0 && (
-                        <TableContainer component={Paper} variant="outlined">
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Date</TableCell>
-                                        <TableCell>Type</TableCell>
-                                        <TableCell>Symbol</TableCell>
-                                        <TableCell align="right">Quantity</TableCell>
-                                        <TableCell align="right">Price</TableCell>
-                                        <TableCell align="right">Total</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {[...filteredTransactions]
-                                        .sort(
-                                            (a, b) =>
-                                                new Date(b.transactionDate).getTime() -
-                                                new Date(a.transactionDate).getTime(),
-                                        )
-                                        .map((t) => (
-                                            <TableRow key={t.id}>
-                                                <TableCell>
-                                                    {formatDateTime(t.transactionDate)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {t.transactionType.toUpperCase()}
-                                                </TableCell>
-                                                <TableCell>{t.symbol}</TableCell>
-                                                <TableCell align="right">
-                                                    {formatQuantity(t.quantity)}
-                                                </TableCell>
-                                                <TableCell align="right">
-                                                    {formatCurrency(t.price)}
-                                                </TableCell>
-                                                <TableCell align="right">
-                                                    {formatCurrency(t.price * t.quantity)}
-                                                </TableCell>
+                        <>
+                            {/* Desktop table view */}
+                            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                                <TableContainer component={Paper} variant="outlined">
+                                    <Table size="small">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Date</TableCell>
+                                                <TableCell>Type</TableCell>
+                                                <TableCell>Symbol</TableCell>
+                                                <TableCell align="right">Quantity</TableCell>
+                                                <TableCell align="right">Price</TableCell>
+                                                <TableCell align="right">Total</TableCell>
                                             </TableRow>
-                                        ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                                        </TableHead>
+                                        <TableBody>
+                                            {[...filteredTransactions]
+                                                .sort(
+                                                    (a, b) =>
+                                                        new Date(b.transactionDate).getTime() -
+                                                        new Date(a.transactionDate).getTime(),
+                                                )
+                                                .map((t) => (
+                                                    <TableRow key={t.id}>
+                                                        <TableCell>
+                                                            {formatDateTime(t.transactionDate)}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {t.transactionType.toUpperCase()}
+                                                        </TableCell>
+                                                        <TableCell>{t.symbol}</TableCell>
+                                                        <TableCell align="right">
+                                                            {formatQuantity(t.quantity)}
+                                                        </TableCell>
+                                                        <TableCell align="right">
+                                                            {formatCurrency(t.price)}
+                                                        </TableCell>
+                                                        <TableCell align="right">
+                                                            {formatCurrency(t.price * t.quantity)}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
+
+                            {/* Mobile card view */}
+                            <Stack sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
+                                {[...filteredTransactions]
+                                    .sort(
+                                        (a, b) =>
+                                            new Date(b.transactionDate).getTime() -
+                                            new Date(a.transactionDate).getTime(),
+                                    )
+                                    .map((t) => (
+                                        <Paper key={t.id} variant="outlined" sx={{ p: 1.5 }}>
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'flex-start',
+                                                    gap: 2,
+                                                }}
+                                            >
+                                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            mb: 1,
+                                                        }}
+                                                    >
+                                                        <Typography fontWeight={700}>
+                                                            {t.symbol}
+                                                        </Typography>
+                                                        <Chip
+                                                            label={t.transactionType.toUpperCase()}
+                                                            size="small"
+                                                            variant={
+                                                                t.transactionType === 'bought'
+                                                                    ? 'filled'
+                                                                    : 'outlined'
+                                                            }
+                                                            color={
+                                                                t.transactionType === 'bought'
+                                                                    ? 'success'
+                                                                    : 'error'
+                                                            }
+                                                        />
+                                                    </Box>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {formatDateTime(t.transactionDate)}
+                                                    </Typography>
+                                                </Box>
+                                                <Box sx={{ textAlign: 'right' }}>
+                                                    <Box>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {formatQuantity(t.quantity)} @{' '}
+                                                            {formatCurrency(t.price)}
+                                                        </Typography>
+                                                    </Box>
+                                                    <Typography fontWeight={700} color="primary">
+                                                        {formatCurrency(t.price * t.quantity)}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        </Paper>
+                                    ))}
+                            </Stack>
+                        </>
                     )}
                 </>
             )}
