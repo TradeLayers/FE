@@ -74,7 +74,7 @@ const AccountPage: React.FC = () => {
 
     const userQuery = useQuery({
         queryKey: ['user'],
-        queryFn: createOrFetchUser,
+        queryFn: () => createOrFetchUser(),
     });
 
     useEffect(() => {
@@ -358,7 +358,8 @@ const AccountPage: React.FC = () => {
                                         <TableBody>
                                             {holdings.map((holding) => {
                                                 const expanded = expandedSymbol === holding.symbol;
-                                                const value = holding.quantity * holding.currentPrice;
+                                                const value =
+                                                    holding.quantity * holding.currentPrice;
                                                 return (
                                                     <Fragment key={holding.symbol}>
                                                         <TableRow
@@ -380,7 +381,9 @@ const AccountPage: React.FC = () => {
                                                                 </IconButton>
                                                             </TableCell>
                                                             <TableCell width={40}>
-                                                                <HoldingLogo symbol={holding.symbol} />
+                                                                <HoldingLogo
+                                                                    symbol={holding.symbol}
+                                                                />
                                                             </TableCell>
                                                             <TableCell>{holding.symbol}</TableCell>
                                                             <TableCell>{holding.name}</TableCell>
@@ -389,7 +392,9 @@ const AccountPage: React.FC = () => {
                                                             </TableCell>
                                                             <TableCell align="right">
                                                                 {holding.currentPrice > 0
-                                                                    ? formatCurrency(holding.currentPrice)
+                                                                    ? formatCurrency(
+                                                                          holding.currentPrice,
+                                                                      )
                                                                     : '—'}
                                                             </TableCell>
                                                             <TableCell align="right">
@@ -400,7 +405,9 @@ const AccountPage: React.FC = () => {
                                                                     size="small"
                                                                     variant="outlined"
                                                                     color="error"
-                                                                    onClick={() => setSellTarget(holding)}
+                                                                    onClick={() =>
+                                                                        setSellTarget(holding)
+                                                                    }
                                                                     data-testid="holdings-sell"
                                                                 >
                                                                     Sell
@@ -426,7 +433,9 @@ const AccountPage: React.FC = () => {
                                                                         <StockStatsCard
                                                                             symbol={holding.symbol}
                                                                             name={holding.name}
-                                                                            ownedQuantity={holding.quantity}
+                                                                            ownedQuantity={
+                                                                                holding.quantity
+                                                                            }
                                                                             currentPrice={
                                                                                 holding.currentPrice
                                                                             }
@@ -474,7 +483,13 @@ const AccountPage: React.FC = () => {
                                                         gap: 2,
                                                     }}
                                                 >
-                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            gap: 1,
+                                                            alignItems: 'center',
+                                                        }}
+                                                    >
                                                         <HoldingLogo symbol={holding.symbol} />
                                                         <Box>
                                                             <Typography fontWeight={700}>
@@ -530,7 +545,9 @@ const AccountPage: React.FC = () => {
                                                         </Typography>
                                                         <Typography fontWeight={600}>
                                                             {holding.currentPrice > 0
-                                                                ? formatCurrency(holding.currentPrice)
+                                                                ? formatCurrency(
+                                                                      holding.currentPrice,
+                                                                  )
                                                                 : '—'}
                                                         </Typography>
                                                     </Box>
@@ -572,7 +589,11 @@ const AccountPage: React.FC = () => {
                                                     </Button>
                                                 </Box>
 
-                                                <Collapse in={expanded} timeout="auto" unmountOnExit>
+                                                <Collapse
+                                                    in={expanded}
+                                                    timeout="auto"
+                                                    unmountOnExit
+                                                >
                                                     <Box
                                                         sx={{
                                                             pt: 1.5,
@@ -753,13 +774,19 @@ const AccountPage: React.FC = () => {
                                                             }
                                                         />
                                                     </Box>
-                                                    <Typography variant="caption" color="text.secondary">
+                                                    <Typography
+                                                        variant="caption"
+                                                        color="text.secondary"
+                                                    >
                                                         {formatDateTime(t.transactionDate)}
                                                     </Typography>
                                                 </Box>
                                                 <Box sx={{ textAlign: 'right' }}>
                                                     <Box>
-                                                        <Typography variant="caption" color="text.secondary">
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.secondary"
+                                                        >
                                                             {formatQuantity(t.quantity)} @{' '}
                                                             {formatCurrency(t.price)}
                                                         </Typography>

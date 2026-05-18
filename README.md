@@ -67,6 +67,9 @@ Create a `.env` file in the root directory and add:
 
 ```env
 VITE_API_URL=http://localhost:5000/api
+VITE_DONATION_CURRENCY=EUR
+# Optional fallback Stripe Payment Link:
+VITE_DONATION_URL=
 ```
 
 Adjust the URL if your backend runs on a different port or host.
@@ -106,7 +109,7 @@ http://localhost:5173
 Tests live in `e2e/` and run **hermetically** — no backend, no Postgres. Playwright boots
 three things automatically as `webServer` entries:
 
-1. **Firebase Auth Emulator** (port 9099) for login/register/reset.
+1. **Firebase Auth Emulator** (port 9099) for OAuth login and API auth tests.
 2. **In-process mock REST server** (`e2e/mock-server.ts`, port 5174) for all `/api/**` calls.
 3. **Vite dev server** (port 5179) wired to both via env vars.
 

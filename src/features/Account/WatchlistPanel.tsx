@@ -246,7 +246,13 @@ const WatchlistPanel: React.FC = () => {
                         sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}
                         data-testid={`watchlist-row-${item.symbol}`}
                     >
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                            }}
+                        >
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Typography fontWeight={700}>{item.symbol}</Typography>
                                 <Typography variant="body2" color="text.secondary" noWrap>
@@ -277,7 +283,9 @@ const WatchlistPanel: React.FC = () => {
                                     Current Price
                                 </Typography>
                                 <Typography fontWeight={600}>
-                                    {item.currentPrice > 0 ? formatCurrency(item.currentPrice) : '—'}
+                                    {item.currentPrice > 0
+                                        ? formatCurrency(item.currentPrice)
+                                        : '—'}
                                 </Typography>
                             </Box>
                             <Box>

@@ -8,9 +8,18 @@ import {
     List,
     ListItem,
     ListItemButton,
+    ListItemIcon,
     ListItemText,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
+import PaidOutlinedIcon from '@mui/icons-material/PaidOutlined';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { signOut } from 'firebase/auth';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -31,11 +40,26 @@ import {
     NavGroup,
     MobileMenuButton,
     AccountGroup,
+    BrandButton,
+    AccountButton,
+    BalanceBadge,
 } from './MainPage.styles';
-    
+
 import { getUnreadNotifications, markNotificationAsRead } from '@api/notificationsApi';
 
 const NOTIFICATION_POLL_INTERVAL_MS = 15000;
+
+const primaryNavItems = [
+    { label: 'About Us', path: '/about', icon: <InfoOutlinedIcon fontSize="small" /> },
+    { label: 'Learn', path: '/learn', icon: <SchoolOutlinedIcon fontSize="small" /> },
+    {
+        label: 'Stocks',
+        path: '/stocks',
+        icon: <ShowChartIcon fontSize="small" />,
+        dataTestId: 'nav-stocks',
+    },
+    { label: 'Donate', path: '/donate', icon: <VolunteerActivismOutlinedIcon fontSize="small" /> },
+];
 
 const MainPage: React.FC = () => {
     const navigate = useNavigate();
@@ -69,7 +93,9 @@ const MainPage: React.FC = () => {
     };
 
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const toggleDrawer = (open: boolean) => () => setDrawerOpen(open);
+    const toggleDrawer = (open: boolean): (() => void) => {
+        return (): void => setDrawerOpen(open);
+    };
 
     const handleNavigate = (path: string): void => {
         navigate(path);
@@ -126,70 +152,43 @@ const MainPage: React.FC = () => {
             <Box sx={HeaderRow} data-testid="app-header">
                 <Button
                     variant="text"
-                    size="large"
+                    size="medium"
+                    startIcon={<PaidOutlinedIcon />}
                     onClick={() => handleNavigate('/')}
-                    sx={{
-                        p: 0,
-                        minWidth: 'auto',
-                        textTransform: 'none',
-                        color: 'text.primary',
-                        fontSize: '2.125rem',
-                        fontWeight: 400,
-                        lineHeight: 1.235,
-                        '&:hover': {
-                            backgroundColor: 'transparent',
-                        },
-                    }}
+                    sx={BrandButton}
                 >
                     Stock Tracker
                 </Button>
-                {/* Light mode (sun) next to title */}
                 <ThemeToggleButton />
 
-                {/* Mobile menu button */}
-                <IconButton aria-label="open menu" onClick={toggleDrawer(true)} sx={MobileMenuButton} size="large">
-                    <MenuIcon />
+                <IconButton
+                    aria-label="open menu"
+                    onClick={toggleDrawer(true)}
+                    sx={MobileMenuButton}
+                    size="large"
+                >
+                    <MenuRoundedIcon />
                 </IconButton>
 
-                {/* Primary navigation (hidden on mobile) */}
                 <Box sx={{ ...NavGroup, display: { xs: 'none', md: 'flex' } }}>
-                    <Button
-                        variant={isActivePath('/about') ? 'contained' : 'outlined'}
-                        size="large"
-                        sx={NavButton}
-                        onClick={() => handleNavigate('/about')}
-                    >
-                        About Us
-                    </Button>
-                    <Button
-                        variant={isActivePath('/learn') ? 'contained' : 'outlined'}
-                        size="large"
-                        sx={NavButton}
-                        onClick={() => handleNavigate('/learn')}
-                    >
-                        Learn
-                    </Button>
-                    <Button
-                        variant={isActivePath('/stocks') ? 'contained' : 'outlined'}
-                        size="large"
-                        sx={NavButton}
-                        onClick={() => handleNavigate('/stocks')}
-                        data-testid="nav-stocks"
-                    >
-                        Stocks
-                    </Button>
-                    <Button
-                        variant={isActivePath('/donate') ? 'contained' : 'outlined'}
-                        size="large"
-                        sx={NavButton}
-                        onClick={() => handleNavigate('/donate')}
-                    >
-                        Donate
-                    </Button>
+                    {primaryNavItems.map((item) => (
+                        <Button
+                            key={item.path}
+                            variant={isActivePath(item.path) ? 'contained' : 'text'}
+                            size="medium"
+                            startIcon={item.icon}
+                            sx={NavButton}
+                            onClick={() => handleNavigate(item.path)}
+                            data-testid={item.dataTestId}
+                        >
+                            {item.label}
+                        </Button>
+                    ))}
                     {isLoggedIn && (
                         <Button
-                            variant={isActivePath('/compare') ? 'contained' : 'outlined'}
-                            size="large"
+                            variant={isActivePath('/compare') ? 'contained' : 'text'}
+                            size="medium"
+                            startIcon={<CompareArrowsIcon fontSize="small" />}
                             sx={NavButton}
                             onClick={() => handleNavigate('/compare')}
                             data-testid="nav-compare"
@@ -199,13 +198,13 @@ const MainPage: React.FC = () => {
                     )}
                 </Box>
 
-                {/* Account / actions group */}
                 <Box sx={AccountGroup}>
                     {isLoggedIn && (
                         <Button
-                            variant={isActivePath('/account') ? 'contained' : 'outlined'}
+                            variant={isActivePath('/account') ? 'contained' : 'text'}
                             size="medium"
-                            sx={{ minWidth: 92 }}
+                            startIcon={<AccountCircleOutlinedIcon fontSize="small" />}
+                            sx={AccountButton}
                             onClick={() => handleNavigate('/account')}
                             data-testid="nav-account"
                         >
@@ -214,17 +213,8 @@ const MainPage: React.FC = () => {
                     )}
 
                     {isLoggedIn && (
-                        <Box
-                            sx={{
-                                px: 1.25,
-                                py: 0.5,
-                                backgroundColor: 'action.hover',
-                                borderRadius: 1,
-                                minWidth: 100,
-                                textAlign: 'center',
-                            }}
-                        >
-                            <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Balance</Box>
+                        <Box sx={BalanceBadge}>
+                            <Box sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>Balance</Box>
                             <Box sx={{ fontSize: '1rem', fontWeight: 600, color: 'primary.main' }}>
                                 ${userBalance.toFixed(2)}
                             </Box>
@@ -234,22 +224,30 @@ const MainPage: React.FC = () => {
                     <LogInButton isLoggedIn={isLoggedIn} onClick={handleAuthButtonClick} />
                 </Box>
 
-                {/* Mobile drawer */}
                 <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-                    <Box sx={{ width: 260 }} role="presentation" onClick={toggleDrawer(false)}>
-                        <List>
+                    <Box
+                        sx={{ width: 280, py: 1 }}
+                        role="presentation"
+                        onClick={toggleDrawer(false)}
+                    >
+                        <List sx={{ px: 1 }}>
                             {[
-                                { label: 'Home', path: '/' },
-                                { label: 'About Us', path: '/about' },
-                                { label: 'Learn', path: '/learn' },
-                                { label: 'Stocks', path: '/stocks' },
-                                { label: 'Donate', path: '/donate' },
+                                {
+                                    label: 'Home',
+                                    path: '/',
+                                    icon: <HomeOutlinedIcon fontSize="small" />,
+                                },
+                                ...primaryNavItems,
                             ].map((item) => (
                                 <ListItem key={item.path} disablePadding>
                                     <ListItemButton
                                         selected={isActivePath(item.path)}
                                         onClick={() => handleNavigate(item.path)}
+                                        sx={{ borderRadius: 1.5, mb: 0.5 }}
                                     >
+                                        <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+                                            {item.icon}
+                                        </ListItemIcon>
                                         <ListItemText primary={item.label} />
                                     </ListItemButton>
                                 </ListItem>
@@ -260,7 +258,11 @@ const MainPage: React.FC = () => {
                                     <ListItemButton
                                         selected={isActivePath('/compare')}
                                         onClick={() => handleNavigate('/compare')}
+                                        sx={{ borderRadius: 1.5, mb: 0.5 }}
                                     >
+                                        <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+                                            <CompareArrowsIcon fontSize="small" />
+                                        </ListItemIcon>
                                         <ListItemText primary="Compare" />
                                     </ListItemButton>
                                 </ListItem>
@@ -271,7 +273,11 @@ const MainPage: React.FC = () => {
                                     <ListItemButton
                                         selected={isActivePath('/account')}
                                         onClick={() => handleNavigate('/account')}
+                                        sx={{ borderRadius: 1.5, mb: 0.5 }}
                                     >
+                                        <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+                                            <AccountCircleOutlinedIcon fontSize="small" />
+                                        </ListItemIcon>
                                         <ListItemText primary="Account" />
                                     </ListItemButton>
                                 </ListItem>

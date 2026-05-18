@@ -1,7 +1,5 @@
-import { test as base, expect, type APIRequestContext } from '@playwright/test';
-import { MOCK_BASE, SEED_EMAIL, SEED_PASSWORD } from './constants';
-
-type AuthFixture = { email: string; password: string };
+import { test as base, expect, type APIRequestContext, type Page } from '@playwright/test';
+import { MOCK_BASE } from './constants';
 
 export type MockApi = {
     reset: (overrides?: Record<string, unknown>) => Promise<void>;
@@ -15,7 +13,6 @@ export type MockApi = {
 };
 
 type Fixtures = {
-    auth: AuthFixture;
     mockApi: MockApi;
     authedPage: void;
 };
@@ -28,10 +25,23 @@ const adminPost = async (
     await request.post(`${MOCK_BASE}/__admin${path}`, { data: body ?? {} });
 };
 
+const signInWithGoogleEmulator = async (page: Page): Promise<void> => {
+    const oauthEmail = `e2e-oauth-${Date.now()}-${Math.random().toString(16).slice(2)}@tradelayers.test`;
+    const popupPromise = page.waitForEvent('popup');
+
+    await page.goto('/login');
+    await page.getByTestId('auth-provider-google').click();
+
+    const popup = await popupPromise;
+    await popup.locator('#add-account-button button').click();
+    await popup.locator('#email-input').fill(oauthEmail);
+    await popup.locator('#display-name-input').fill('E2E User');
+    const popupClosed = popup.waitForEvent('close', { timeout: 10_000 }).catch(() => undefined);
+    await popup.locator('#sign-in').click();
+    await popupClosed;
+};
+
 export const test = base.extend<Fixtures>({
-    auth: async ({}, use) => {
-        await use({ email: SEED_EMAIL, password: SEED_PASSWORD });
-    },
     mockApi: [
         async ({ request }, use) => {
             const api: MockApi = {
@@ -52,11 +62,8 @@ export const test = base.extend<Fixtures>({
         { auto: true },
     ],
     authedPage: [
-        async ({ page, auth }, use) => {
-            await page.goto('/login');
-            await page.getByTestId('login-email').fill(auth.email);
-            await page.getByTestId('login-password').fill(auth.password);
-            await page.getByTestId('login-submit').click();
+        async ({ page }, use) => {
+            await signInWithGoogleEmulator(page);
             await expect(page.getByTestId('app-shell')).toBeVisible({ timeout: 20_000 });
             await use();
         },

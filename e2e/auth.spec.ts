@@ -1,16 +1,21 @@
 import { test, expect } from './fixtures';
 
 test.describe('Authentication', () => {
-    test('user can log in and log out', async ({ page, auth, authedPage }) => {
+    test('login page offers OAuth providers only', async ({ page }) => {
+        await page.goto('/login');
+        await expect(page.getByTestId('auth-provider-google')).toBeVisible();
+        await expect(page.getByTestId('auth-provider-github')).toBeVisible();
+        await expect(page.getByTestId('auth-provider-facebook')).toBeVisible();
+        await expect(page.getByTestId('auth-provider-microsoft')).toBeVisible();
+        await expect(page.getByTestId('auth-provider-apple')).toBeVisible();
+        await expect(page.getByTestId('email-password-form')).toHaveCount(0);
+    });
+
+    test('user can log out', async ({ page, authedPage }) => {
         await authedPage;
         await expect(page.getByTestId('app-shell')).toBeVisible();
         await page.getByTestId('logout-button').click();
-        // After logout the app navigates home; head to /login to re-auth.
         await page.goto('/login');
-        await expect(page.getByTestId('login-email')).toBeVisible();
-        await page.getByTestId('login-email').fill(auth.email);
-        await page.getByTestId('login-password').fill(auth.password);
-        await page.getByTestId('login-submit').click();
-        await expect(page.getByTestId('app-shell')).toBeVisible();
+        await expect(page.getByTestId('login-page')).toBeVisible();
     });
 });
