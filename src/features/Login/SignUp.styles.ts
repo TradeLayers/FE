@@ -14,7 +14,7 @@ export const Description: SxProps<Theme> = {
     maxWidth: 600,
     color: 'text.primary',
     bgcolor: 'background.paper',
-    borderRadius: 3,
+    borderRadius: 2,
     p: 4,
     boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
 };
@@ -26,7 +26,11 @@ export const AdditionalInfo: SxProps<Theme> = {
 };
 
 export const AuthOptions: SxProps<Theme> = {
-    display: 'flex',
-    gap: 2,
+    display: 'grid',
+    gridTemplateColumns: {
+        xs: '1fr',
+        sm: 'repeat(2, minmax(0, 1fr))',
+    },
+    gap: 1.5,
     color: 'text.primary',
 };

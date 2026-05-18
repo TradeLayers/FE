@@ -187,7 +187,9 @@ const AlertsPanel: React.FC = () => {
                                     Current Price
                                 </Typography>
                                 <Typography fontWeight={600}>
-                                    {item.currentPrice > 0 ? formatCurrency(item.currentPrice) : '—'}
+                                    {item.currentPrice > 0
+                                        ? formatCurrency(item.currentPrice)
+                                        : '—'}
                                 </Typography>
                             </Box>
                             <Box>

@@ -67,7 +67,7 @@ function AuthListener(): null {
             );
 
             try {
-                const dbUser = await createOrFetchUser();
+                const dbUser = await createOrFetchUser(token);
                 dispatch(addUserInfo(dbUser));
             } catch {
                 // swallow: already have the auth-only user info in the store
